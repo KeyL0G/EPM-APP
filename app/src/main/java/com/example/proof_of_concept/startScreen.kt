@@ -1,14 +1,11 @@
 package com.example.proof_of_concept
 
-import androidx.compose.runtime.Composable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -22,6 +19,9 @@ import org.osmdroid.views.MapView
 
 @Composable
 fun startScreen(onSettingsClick: () -> Unit) {
+    var showLocationDialog by remember { mutableStateOf(false) }
+    var buttonText by remember { mutableStateOf("In der Nähe suchen?") }
+
     Box(modifier = Modifier.fillMaxSize()) {
         // Karte
         AndroidView(
@@ -46,10 +46,10 @@ fun startScreen(onSettingsClick: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Button(
-                onClick = {},
+                onClick = { showLocationDialog = true },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Sucht in der Nähe")
+                Text(buttonText)
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -95,6 +95,31 @@ fun startScreen(onSettingsClick: () -> Unit) {
                     contentDescription = "Einstellungen"
                 )
             }
+        }
+
+        // Location Permission Dialog
+        if (showLocationDialog) {
+            AlertDialog(
+                onDismissRequest = { showLocationDialog = false },
+                title = { Text("Standort verwenden") },
+                text = { Text("Möchten Sie Ihren Standort verwenden?") },
+                confirmButton = {
+                    TextButton(onClick = {
+                        buttonText = "Sucht in der Nähe" // Text des Buttons ändern
+                        showLocationDialog = false
+                    }) {
+                        Text("Ja")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = {
+                        buttonText = "Standort deaktiviert" // Text des Buttons ändern, wenn Nein gedrückt wird
+                        showLocationDialog = false
+                    }) {
+                        Text("Nein")
+                    }
+                }
+            )
         }
     }
 }
