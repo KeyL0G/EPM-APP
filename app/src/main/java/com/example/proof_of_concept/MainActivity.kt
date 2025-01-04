@@ -1,5 +1,4 @@
 package com.example.proof_of_concept
-
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -14,13 +13,13 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // OSMdroid-Konfiguration
         Configuration.getInstance().userAgentValue = packageName
 
+        // Compose UI laden
         setContent {
             Proof_Of_ConceptTheme {
-                startScreen { mapView ->
-                    map = mapView
-                }
+                App() // Startet die App mit Navigation
             }
         }
     }

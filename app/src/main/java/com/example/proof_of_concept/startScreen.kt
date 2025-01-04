@@ -21,7 +21,7 @@ import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 
 @Composable
-fun startScreen(onMapReady: (MapView) -> Unit) {
+fun startScreen(onSettingsClick: () -> Unit) {
     Box(modifier = Modifier.fillMaxSize()) {
         // Karte
         AndroidView(
@@ -32,7 +32,6 @@ fun startScreen(onMapReady: (MapView) -> Unit) {
                     setMultiTouchControls(true)
                     controller.setZoom(10.0)
                     controller.setCenter(GeoPoint(50.93450168288072, 7.0268959013448296))
-                    onMapReady(this)
                 }
             },
             modifier = Modifier.fillMaxSize()
@@ -85,7 +84,7 @@ fun startScreen(onMapReady: (MapView) -> Unit) {
             }
 
             IconButton(
-                onClick = {},
+                onClick = onSettingsClick,
                 modifier = Modifier
                     .size(60.dp)
                     .clip(CircleShape)
