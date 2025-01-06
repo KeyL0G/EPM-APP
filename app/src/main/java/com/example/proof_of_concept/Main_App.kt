@@ -9,7 +9,7 @@ import androidx.compose.runtime.setValue
 import org.osmdroid.views.MapView
 
 @Composable
-fun Main_App(map: MapView, context: Context) {
+fun Main_App(map: MapView?, context: Context) {
     var selectedNavigation by remember{ mutableStateOf("Start") }
 
     when(selectedNavigation){

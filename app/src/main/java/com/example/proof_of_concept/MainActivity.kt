@@ -39,9 +39,9 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.fillMaxSize()
                     )
 
-                    if(map != null) {
-                        Main_App(map!!, LocalContext.current)
-                    }
+
+                    // MAP need to be not null LATER
+                    Main_App(map, LocalContext.current)
                 }
             }
         }
