@@ -17,8 +17,8 @@ class Osmdroid_Viewmodel: ViewModel() {
     }
 
     fun getRoutes(mapView: MapView){
-        val getRouteFromOSRM = getRoutesFromOSRM("", GeoPoint(0.0,0.0), GeoPoint(0.0,0.0))
-        val getRouteFromOpenRouteService = getRouteFromOpenRouteService("", GeoPoint(0.0,0.0), GeoPoint(0.0,0.0))
+        val getRouteFromOSRM = getRoutesFromOSRM("routed-foot", GeoPoint(50.93450168288072,7.0268959013448296), GeoPoint(50.9615938331697,7.00553677156708))
+        val getRouteFromOpenRouteService = getRouteFromOpenRouteService("foot-walking", GeoPoint(50.93450168288072,7.0268959013448296), GeoPoint(50.9615938331697,7.00553677156708))
         val allRoute = mutableListOf<List<GeoPoint>>()
         allRoute.add(getRouteFromOSRM)
         getRouteFromOpenRouteService.forEach{ allRoute.add(it) }

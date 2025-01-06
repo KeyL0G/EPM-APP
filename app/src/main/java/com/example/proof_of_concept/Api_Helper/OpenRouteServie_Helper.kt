@@ -1,5 +1,6 @@
 package com.example.proof_of_concept.Api_Helper
 
+import com.example.proof_of_concept.BuildConfig
 import com.google.maps.android.PolyUtil
 import okhttp3.MediaType.Companion.toMediaType
 import org.json.JSONObject
@@ -7,7 +8,7 @@ import org.osmdroid.util.GeoPoint
 
 fun getRouteFromOpenRouteService(routeOption: String, locationStart: GeoPoint, locationEnd: GeoPoint): List<List<GeoPoint>> {
     val OpenRouteService = "https://api.openrouteservice.org/v2/directions/${routeOption}"
-    val apiKey = ""
+    val apiKey = BuildConfig.API_KEY
     val jsonBody = JSONObject()
 
     val coordinates = listOf(

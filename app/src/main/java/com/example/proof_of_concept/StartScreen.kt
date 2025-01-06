@@ -12,32 +12,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory
-import org.osmdroid.util.GeoPoint
-import org.osmdroid.views.MapView
 
 @Composable
-fun startScreen(onSettingsClick: () -> Unit) {
-    var showLocationDialog by remember { mutableStateOf(false) }
+fun StartScreen(onNavigationClick: () -> Unit) {
     var buttonText by remember { mutableStateOf("In der Nähe suchen?") }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // Karte
-        AndroidView(
-            factory = { context ->
-                MapView(context).apply {
-                    setTileSource(TileSourceFactory.MAPNIK)
-                    isTilesScaledToDpi = true
-                    setMultiTouchControls(true)
-                    controller.setZoom(10.0)
-                    controller.setCenter(GeoPoint(50.93450168288072, 7.0268959013448296))
-                }
-            },
-            modifier = Modifier.fillMaxSize()
-        )
-
-        // Suchfeld und Button oben
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -46,7 +26,7 @@ fun startScreen(onSettingsClick: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Button(
-                onClick = { showLocationDialog = true },
+                onClick = { buttonText = "Sucht in der Nähe." },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(buttonText)
@@ -63,7 +43,6 @@ fun startScreen(onSettingsClick: () -> Unit) {
             )
         }
 
-        // Filter- und Einstellungen-Buttons unten rechts
         Column(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
@@ -84,7 +63,7 @@ fun startScreen(onSettingsClick: () -> Unit) {
             }
 
             IconButton(
-                onClick = onSettingsClick,
+                onClick = onNavigationClick,
                 modifier = Modifier
                     .size(60.dp)
                     .clip(CircleShape)
@@ -95,31 +74,6 @@ fun startScreen(onSettingsClick: () -> Unit) {
                     contentDescription = "Einstellungen"
                 )
             }
-        }
-
-        // Location Permission Dialog
-        if (showLocationDialog) {
-            AlertDialog(
-                onDismissRequest = { showLocationDialog = false },
-                title = { Text("Standort verwenden") },
-                text = { Text("Möchten Sie Ihren Standort verwenden?") },
-                confirmButton = {
-                    TextButton(onClick = {
-                        buttonText = "Sucht in der Nähe" // Text des Buttons ändern
-                        showLocationDialog = false
-                    }) {
-                        Text("Ja")
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = {
-                        buttonText = "Standort deaktiviert" // Text des Buttons ändern, wenn Nein gedrückt wird
-                        showLocationDialog = false
-                    }) {
-                        Text("Nein")
-                    }
-                }
-            )
         }
     }
 }
