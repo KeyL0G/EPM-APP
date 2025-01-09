@@ -39,26 +39,25 @@ fun SettingsScreen(onNavigationClick: () -> Unit) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text("Filter-Details:")
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Checkbox(checked = false, onCheckedChange = {})
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Barrierefrei")
-            }
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Checkbox(checked = false, onCheckedChange = {})
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Kostenlos")
-            }
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Checkbox(checked = false, onCheckedChange = {})
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Wickelstation")
-            }
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Checkbox(checked = false, onCheckedChange = {})
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Ampelfreier Weg")
+            val filters = listOf(
+                "Barrierefrei" to remember { mutableStateOf(false) },
+                "Kostenlos" to remember { mutableStateOf(false) },
+                "Wickelstation" to remember { mutableStateOf(false) },
+                "Ampelfreier Weg" to remember { mutableStateOf(false) }
+            )
+
+            Column {
+                Text("Filter-Details:")
+                filters.forEach { (label, state) ->
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = state.value,
+                            onCheckedChange = { state.value = !state.value }
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(label)
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
