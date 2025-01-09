@@ -17,13 +17,6 @@ import androidx.compose.ui.unit.dp
 fun StartScreen(onNavigationClick: () -> Unit) {
     var buttonText by remember { mutableStateOf("In der Nähe suchen?") }
     var selectedTab by remember { mutableStateOf(0) } // 0 = Kartenansicht, 1 = Listenansicht
-    val toilettenListe = listOf(
-        "Straße 1234",
-        "Straße 5678",
-        "Straße 91011",
-        "Straße 121314",
-        "Straße 151617"
-    )
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -83,60 +76,6 @@ fun StartScreen(onNavigationClick: () -> Unit) {
             }
         }
 
-        // Inhalt basierend auf der ausgewählten Ansicht
-        if (selectedTab == 1) {
-            // Listenansicht
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp)
-                    .align(Alignment.TopCenter)
-            ) {
-                Text("Köln", style = MaterialTheme.typography.headlineMedium)
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Liste der Toiletten
-                toilettenListe.forEach { adresse ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp)
-                            .background(Color.White, shape = MaterialTheme.shapes.medium)
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column {
-                            Text(adresse, style = MaterialTheme.typography.bodyMedium)
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                repeat(4) { // 4 Sterne
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.star_filled_blue),
-                                        contentDescription = "Bewertung",
-                                        tint = Color.Blue,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                }
-                                Icon(
-                                    painter = painterResource(id = R.drawable.star_outline_blue),
-                                    contentDescription = "Bewertung",
-                                    tint = Color.Blue,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Text("100 Bewertungen", style = MaterialTheme.typography.bodySmall)
-                            }
-                        }
-                        Icon(
-                            painter = painterResource(id = R.drawable.keyboard_arrow_right_black),
-                            contentDescription = "Details anzeigen",
-                            tint = Color.Gray
-                        )
-                    }
-                }
-            }
-        }
-
         // Icons unten rechts
         Column(
             modifier = Modifier
@@ -172,3 +111,4 @@ fun StartScreen(onNavigationClick: () -> Unit) {
         }
     }
 }
+
