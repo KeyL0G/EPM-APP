@@ -43,7 +43,6 @@ fun SettingsScreen(onNavigationClick: () -> Unit) {
                 "Barrierefrei" to remember { mutableStateOf(false) },
                 "Kostenlos" to remember { mutableStateOf(false) },
                 "Wickelstation" to remember { mutableStateOf(false) },
-                "Ampelfreier Weg" to remember { mutableStateOf(false) }
             )
 
             Column {

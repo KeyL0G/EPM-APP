@@ -1,19 +1,18 @@
 package com.example.proof_of_concept
 
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.Manifest
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
@@ -26,6 +25,9 @@ import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
+import android.location.LocationManager
+import androidx.core.content.ContextCompat
+
 
 class MainActivity : ComponentActivity() {
 
@@ -44,6 +46,10 @@ class MainActivity : ComponentActivity() {
                 contract = ActivityResultContracts.RequestPermission(),
                 onResult = { isGranted ->
                     hasPermission = isGranted
+                    if (isGranted) {
+                        // If permission is granted, update the map to the current location
+                        updateMapToCurrentLocation(context)
+                    }
                 }
             )
 
@@ -69,7 +75,6 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.fillMaxSize()
                     )
 
-
                     // MAP need to be not null LATER
                     Main_App(map, LocalContext.current) {
                         executeAsync {
@@ -80,6 +85,28 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
+        }
+    }
+
+    private fun updateMapToCurrentLocation(context: Context) {
+        // Check if the location permission is granted
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            try {
+                val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+                val location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+
+                if (location != null) {
+                    val geoPoint = GeoPoint(location.latitude, location.longitude)
+                    map?.controller?.setCenter(geoPoint)
+                    map?.controller?.setZoom(15.0)  // Adjust zoom level
+                } else {
+                    Log.e("Location", "Unable to retrieve current location.")
+                }
+            } catch (e: SecurityException) {
+                Log.e("Location", "SecurityException: ${e.message}")
+            }
+        } else {
+            Log.e("Permission", "Location permission not granted.")
         }
     }
 
@@ -102,5 +129,4 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-
 }
