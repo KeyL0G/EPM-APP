@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun StartScreen(onNavigationClick: () -> Unit) {
     var buttonText by remember { mutableStateOf("In der Nähe suchen?") }
+    var selectedTab by remember { mutableStateOf(0) } // 0 = Kartenansicht, 1 = Listenansicht
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -25,6 +26,7 @@ fun StartScreen(onNavigationClick: () -> Unit) {
                 .align(Alignment.TopCenter),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Suche Button
             Button(
                 onClick = { buttonText = "Sucht in der Nähe." },
                 modifier = Modifier.fillMaxWidth()
@@ -34,6 +36,7 @@ fun StartScreen(onNavigationClick: () -> Unit) {
 
             Spacer(modifier = Modifier.height(8.dp))
 
+            // Suchleiste
             Text(
                 text = "Suchen ...",
                 modifier = Modifier
@@ -41,8 +44,39 @@ fun StartScreen(onNavigationClick: () -> Unit) {
                     .background(Color.White, shape = MaterialTheme.shapes.medium)
                     .padding(16.dp)
             )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Ansichtsauswahl (Karten- und Listenansicht)
+            TabRow(
+                selectedTabIndex = selectedTab,
+                modifier = Modifier.fillMaxWidth(),
+                containerColor = Color.White
+            ) {
+                Tab(
+                    selected = selectedTab == 0,
+                    onClick = { selectedTab = 0 }
+                ) {
+                    Text(
+                        text = "Kartenansicht",
+                        modifier = Modifier.padding(16.dp),
+                        color = if (selectedTab == 0) Color.Blue else Color.Gray
+                    )
+                }
+                Tab(
+                    selected = selectedTab == 1,
+                    onClick = { selectedTab = 1 }
+                ) {
+                    Text(
+                        text = "Listenansicht",
+                        modifier = Modifier.padding(16.dp),
+                        color = if (selectedTab == 1) Color.Blue else Color.Gray
+                    )
+                }
+            }
         }
 
+        // Icons unten rechts
         Column(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
