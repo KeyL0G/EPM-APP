@@ -14,8 +14,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun StartScreen(onNavigationClick: () -> Unit) {
+fun StartScreen(onNavigationClick: () -> Unit, askLocationPermission: () -> Unit) {
     var buttonText by remember { mutableStateOf("In der Nähe suchen?") }
+
+
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -26,7 +28,9 @@ fun StartScreen(onNavigationClick: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Button(
-                onClick = { buttonText = "Sucht in der Nähe." },
+                onClick = { buttonText = "Sucht in der Nähe."
+                           askLocationPermission()
+                          },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(buttonText)

@@ -71,7 +71,13 @@ class MainActivity : ComponentActivity() {
 
 
                     // MAP need to be not null LATER
-                    Main_App(map, LocalContext.current)
+                    Main_App(map, LocalContext.current) {
+                        executeAsync {
+                            if (!hasPermission && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                            }
+                        }
+                    }
                 }
             }
         }
