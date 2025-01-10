@@ -16,11 +16,10 @@ fun Main_App(map: MapView?, context: Context, askLocationPermission: () -> Unit)
         "Start" -> StartScreen(
             onNavigationClick = {
                     selectedNavigation = "Settings"
+                },
+                askLocationPermission = {
+                    askLocationPermission()
                 }
-            ,
-            askLocationPermission = {
-                askLocationPermission()
-            }
             )
 
         "Settings" -> SettingsScreen(
