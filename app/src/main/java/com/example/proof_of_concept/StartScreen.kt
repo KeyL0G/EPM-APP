@@ -1,5 +1,9 @@
 package com.example.proof_of_concept
 
+import android.Manifest
+import android.content.Context
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -13,18 +17,33 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.example.proof_of_concept.Helper.hasLocationPermission
+import com.example.proof_of_concept.Viewmodels.Map_Viewmodel
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
-fun StartScreen(onNavigationClick: () -> Unit, askLocationPermission: () -> Unit) {
-    var buttonText by remember { mutableStateOf("In der Nähe suchen?") }
-    var selectedTab by remember { mutableStateOf(0) }
-    val toilettenListe = listOf(
-        "Straße 1234",
-        "Straße 5678",
-        "Straße 91011",
-        "Straße 121314",
-        "Straße 151617"
+fun StartScreen(context: Context,onNavigationClick: () -> Unit) {
+    val map_viewmodel: Map_Viewmodel = viewModel()
+    var hasPermission by remember { mutableStateOf(hasLocationPermission(context)) }
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted -> hasPermission = isGranted }
     )
+
+    var buttonText by remember {
+        if(!hasPermission)
+            mutableStateOf("In der Nähe suchen?")
+        else
+            mutableStateOf("Sucht in der Nähe.")
+    }
+//    var selectedTab by remember { mutableStateOf(0) }
+//    val toilettenListe = listOf(
+//        "Straße 1234",
+//        "Straße 5678",
+//        "Straße 91011",
+//        "Straße 121314",
+//        "Straße 151617"
+//    )
     var showFilterMenu by remember { mutableStateOf(false) }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -34,135 +53,135 @@ fun StartScreen(onNavigationClick: () -> Unit, askLocationPermission: () -> Unit
                 .padding(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Suche Button
             Button(
                 onClick = {
-                    buttonText = "Sucht in der Nähe."
-                    askLocationPermission()
+                    permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                    if (hasPermission) {
+                        map_viewmodel.updateLocation(context)
+                        map_viewmodel.moveMapToCurrentLocation()
+                    }
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !hasPermission
             ) {
-                Text(buttonText, style = MaterialTheme.typography.bodySmall) // Kleinere Schrift
+                Text(buttonText, style = MaterialTheme.typography.bodySmall)
             }
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Suchleiste
             Text(
                 text = "Suchen ...",
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Color.White, shape = MaterialTheme.shapes.medium)
-                    .padding(12.dp), // Kompakte, aber sichtbare Größe
-                style = MaterialTheme.typography.bodyMedium // Lesbare Schriftgröße
+                    .padding(12.dp),
+                style = MaterialTheme.typography.bodyMedium
             )
 
-            Spacer(modifier = Modifier.height(8.dp)) // Abstand zur Ansichtsauswahl
+//            Spacer(modifier = Modifier.height(8.dp))
 
-            // Ansichtsauswahl (Karten- und Listenansicht)
-            TabRow(
-                selectedTabIndex = selectedTab,
-                modifier = Modifier.fillMaxWidth(),
-                containerColor = Color.White
-            ) {
-                Tab(
-                    selected = selectedTab == 0,
-                    onClick = { selectedTab = 0 }
-                ) {
-                    Text(
-                        text = "Kartenansicht",
-                        modifier = Modifier.padding(8.dp),
-                        color = if (selectedTab == 0) Color.Blue else Color.Gray,
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
-                Tab(
-                    selected = selectedTab == 1,
-                    onClick = { selectedTab = 1 }
-                ) {
-                    Text(
-                        text = "Listenansicht",
-                        modifier = Modifier.padding(8.dp),
-                        color = if (selectedTab == 1) Color.Blue else Color.Gray,
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp)) // Abstand zur Liste
-
-            if (selectedTab == 1) {
-                // Listenansicht
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentHeight() // Höhe passt sich der Liste an
-                        .background(Color(0xFFF5F5F5)) // Dezenter Hintergrund
-                        .padding(8.dp)
-                ) {
-                    Text(
-                        "Köln",
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(vertical = 8.dp)
-                    )
-
-                    // Liste der Toiletten
-                    toilettenListe.forEachIndexed { index, adresse ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 4.dp)
-                                .background(Color.White, shape = MaterialTheme.shapes.small)
-                                .padding(12.dp), // Angenehme Größe
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    adresse,
-                                    style = MaterialTheme.typography.bodyMedium, // Etwas größere Schrift
-                                    modifier = Modifier.padding(bottom = 4.dp)
-                                )
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    repeat(4) { // 4 Sterne
-                                        Icon(
-                                            painter = painterResource(id = R.drawable.star_filled_blue),
-                                            contentDescription = "Bewertung",
-                                            tint = Color.Blue,
-                                            modifier = Modifier.size(14.dp) // Kompakte Sterne
-                                        )
-                                    }
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.star_outline_blue),
-                                        contentDescription = "Bewertung",
-                                        tint = Color.Blue,
-                                        modifier = Modifier.size(14.dp) // Kompakte Sterne
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(
-                                        "100 Bewertungen",
-                                        style = MaterialTheme.typography.bodySmall
-                                    )
-                                }
-                            }
-                            Icon(
-                                painter = painterResource(id = R.drawable.keyboard_arrow_right_black),
-                                contentDescription = "Details anzeigen",
-                                tint = Color.Gray,
-                                modifier = Modifier.size(20.dp) // Lesbarer Pfeil
-                            )
-                        }
-
-                        if (index != toilettenListe.lastIndex) {
-                            Divider(
-                                color = Color.Gray.copy(alpha = 0.3f),
-                                thickness = 1.dp,
-                                modifier = Modifier.padding(vertical = 4.dp)
-                            )
-                        }
-                    }
-                }
-            }
+//            TabRow(
+//                selectedTabIndex = selectedTab,
+//                modifier = Modifier.fillMaxWidth(),
+//                containerColor = Color.White
+//            ) {
+//                Tab(
+//                    selected = selectedTab == 0,
+//                    onClick = { selectedTab = 0 }
+//                ) {
+//                    Text(
+//                        text = "Kartenansicht",
+//                        modifier = Modifier.padding(8.dp),
+//                        color = if (selectedTab == 0) Color.Blue else Color.Gray,
+//                        style = MaterialTheme.typography.bodySmall
+//                    )
+//                }
+//                Tab(
+//                    selected = selectedTab == 1,
+//                    onClick = { selectedTab = 1 }
+//                ) {
+//                    Text(
+//                        text = "Listenansicht",
+//                        modifier = Modifier.padding(8.dp),
+//                        color = if (selectedTab == 1) Color.Blue else Color.Gray,
+//                        style = MaterialTheme.typography.bodySmall
+//                    )
+//                }
+//            }
+//
+//            Spacer(modifier = Modifier.height(8.dp))
+//
+//            if (selectedTab == 1) {
+//                // Listenansicht
+//                Column(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .wrapContentHeight()
+//                        .background(Color(0xFFF5F5F5))
+//                        .padding(8.dp)
+//                ) {
+//                    Text(
+//                        "Köln",
+//                        style = MaterialTheme.typography.bodyMedium,
+//                        modifier = Modifier.padding(vertical = 8.dp)
+//                    )
+//
+//                    toilettenListe.forEachIndexed { index, adresse ->
+//                        Row(
+//                            modifier = Modifier
+//                                .fillMaxWidth()
+//                                .padding(vertical = 4.dp)
+//                                .background(Color.White, shape = MaterialTheme.shapes.small)
+//                                .padding(12.dp),
+//                            horizontalArrangement = Arrangement.SpaceBetween,
+//                            verticalAlignment = Alignment.CenterVertically
+//                        ) {
+//                            Column(modifier = Modifier.weight(1f)) {
+//                                Text(
+//                                    adresse,
+//                                    style = MaterialTheme.typography.bodyMedium,
+//                                    modifier = Modifier.padding(bottom = 4.dp)
+//                                )
+//                                Row(verticalAlignment = Alignment.CenterVertically) {
+//                                    repeat(4) {
+//                                        Icon(
+//                                            painter = painterResource(id = R.drawable.star_filled_blue),
+//                                            contentDescription = "Bewertung",
+//                                            tint = Color.Blue,
+//                                            modifier = Modifier.size(14.dp)
+//                                        )
+//                                    }
+//                                    Icon(
+//                                        painter = painterResource(id = R.drawable.star_outline_blue),
+//                                        contentDescription = "Bewertung",
+//                                        tint = Color.Blue,
+//                                        modifier = Modifier.size(14.dp)
+//                                    )
+//                                    Spacer(modifier = Modifier.width(4.dp))
+//                                    Text(
+//                                        "100 Bewertungen",
+//                                        style = MaterialTheme.typography.bodySmall
+//                                    )
+//                                }
+//                            }
+//                            Icon(
+//                                painter = painterResource(id = R.drawable.keyboard_arrow_right_black),
+//                                contentDescription = "Details anzeigen",
+//                                tint = Color.Gray,
+//                                modifier = Modifier.size(20.dp)
+//                            )
+//                        }
+//
+//                        if (index != toilettenListe.lastIndex) {
+//                            Divider(
+//                                color = Color.Gray.copy(alpha = 0.3f),
+//                                thickness = 1.dp,
+//                                modifier = Modifier.padding(vertical = 4.dp)
+//                            )
+//                        }
+//                    }
+//                }
+//            }
         }
 
         Column(
@@ -198,7 +217,6 @@ fun StartScreen(onNavigationClick: () -> Unit, askLocationPermission: () -> Unit
             }
         }
 
-        // Aufklappbares Fenster
         if (showFilterMenu) {
             FilterMenu(
                 onDismiss = { showFilterMenu = false }
@@ -247,7 +265,6 @@ fun FilterMenu(onDismiss: () -> Unit) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Schließen-Button
             Button(onClick = onDismiss, modifier = Modifier.align(Alignment.End)) {
                 Text("Schließen")
             }

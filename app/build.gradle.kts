@@ -65,6 +65,8 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.android.maps.utils)
+    implementation(libs.activity.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
 
     //OpenStreetMap Library
     implementation(libs.osmdroid.android)
