@@ -3,6 +3,7 @@ package com.example.proof_of_concept
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.location.LocationManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -25,9 +26,7 @@ import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
-import android.location.LocationManager
 import androidx.core.content.ContextCompat
-
 
 class MainActivity : ComponentActivity() {
 
@@ -37,6 +36,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Set user agent for osmdroid
         Configuration.getInstance().userAgentValue = packageName
 
         setContent {
@@ -47,15 +47,26 @@ class MainActivity : ComponentActivity() {
                 onResult = { isGranted ->
                     hasPermission = isGranted
                     if (isGranted) {
-                        // If permission is granted, update the map to the current location
+                        // Update map to current location if permission granted
                         updateMapToCurrentLocation(context)
                     }
                 }
             )
 
+            // Request permission if not granted
             executeAsync {
-                if (!hasPermission && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                if (!hasPermission) {
+                    when {
+                        Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> {
+                            permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                        }
+                        Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> {
+                            permissionLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                        }
+                        else -> {
+                            permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                        }
+                    }
                 }
             }
 
@@ -75,10 +86,10 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.fillMaxSize()
                     )
 
-                    // MAP need to be not null LATER
+                    // MAP should not be null before use
                     Main_App(map, LocalContext.current) {
                         executeAsync {
-                            if (!hasPermission && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            if (!hasPermission) {
                                 permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
                             }
                         }
@@ -89,26 +100,52 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun updateMapToCurrentLocation(context: Context) {
-        // Check if the location permission is granted
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             try {
                 val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-                val location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
 
-                if (location != null) {
-                    val geoPoint = GeoPoint(location.latitude, location.longitude)
-                    map?.controller?.setCenter(geoPoint)
-                    map?.controller?.setZoom(15.0)  // Adjust zoom level
-                } else {
-                    Log.e("Location", "Unable to retrieve current location.")
+                // Ensure location services are enabled
+                if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) && !locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+                    Log.e("Location", "Location services are disabled.")
+                    return
                 }
+
+                // Request location updates if location services are available
+                locationManager.requestLocationUpdates(
+                    LocationManager.GPS_PROVIDER,
+                    1000L,  // Interval between updates (ms)
+                    1f,  // Minimum distance between updates (meters)
+                    { updatedLocation ->
+                        val geoPoint = GeoPoint(updatedLocation.latitude, updatedLocation.longitude)
+                        map?.controller?.setCenter(geoPoint)
+                        map?.controller?.setZoom(15.0)  // Set zoom level
+                        Log.d("LocationUpdate", "Location updated to: ${updatedLocation.latitude}, ${updatedLocation.longitude}")
+                    }
+                )
+
+                // Request updates from NETWORK_PROVIDER as a fallback if GPS is unavailable
+                locationManager.requestLocationUpdates(
+                    LocationManager.NETWORK_PROVIDER,
+                    1000L,  // Interval between updates (ms)
+                    1f,  // Minimum distance between updates (meters)
+                    { updatedLocation ->
+                        val geoPoint = GeoPoint(updatedLocation.latitude, updatedLocation.longitude)
+                        map?.controller?.setCenter(geoPoint)
+                        map?.controller?.setZoom(15.0)
+                        Log.d("LocationUpdate", "Location updated to: ${updatedLocation.latitude}, ${updatedLocation.longitude}")
+                    }
+                )
+
             } catch (e: SecurityException) {
                 Log.e("Location", "SecurityException: ${e.message}")
+            } catch (e: Exception) {
+                Log.e("Location", "Unexpected error: ${e.message}")
             }
         } else {
             Log.e("Permission", "Location permission not granted.")
         }
     }
+
 
     override fun onResume() {
         super.onResume()
