@@ -44,11 +44,16 @@ class MainActivity : ComponentActivity() {
                 onResult = { isGranted -> hasPermission = isGranted }
             )
 
-            val currentLocation: GeoPoint =
-                if(map_viewmodel.currentLocation.value != null)
-                    map_viewmodel.currentLocation.value!!
-                else
-                    GeoPoint(0.0,0.0)
+            executeAsync {
+                if (hasPermission) {
+                    map_viewmodel.updateLocation(context)
+                    map_viewmodel.moveMapToCurrentLocation()
+                } else {
+                    permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                    map_viewmodel.updateLocation(context)
+                    map_viewmodel.moveMapToCurrentLocation()
+                }
+            }
 
             Proof_Of_ConceptTheme {
                 Box(modifier = Modifier.fillMaxSize()) {
@@ -60,21 +65,13 @@ class MainActivity : ComponentActivity() {
                                 map?.isTilesScaledToDpi = true
                                 map?.setMultiTouchControls(true)
                                 map?.controller?.setZoom(15.0)
-                                map?.controller?.setCenter(currentLocation)
+                                map?.controller?.setCenter(GeoPoint(0.0,0.0))
                             }
                         },
                         modifier = Modifier.fillMaxSize()
                     )
 
-                    Main_App()
-                }
-            }
-
-            executeAsync {
-                if (!hasPermission) {
-                    permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-                    map_viewmodel.updateLocation(context)
-                    map_viewmodel.moveMapToCurrentLocation()
+                    Main_App(context = context)
                 }
             }
         }
