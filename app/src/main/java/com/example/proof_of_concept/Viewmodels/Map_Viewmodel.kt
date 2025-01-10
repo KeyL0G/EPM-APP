@@ -11,10 +11,10 @@ import org.osmdroid.views.MapView
 
 class Map_Viewmodel: ViewModel() {
     private val _currentLocation: MutableLiveData<GeoPoint> = MutableLiveData()
-    val currentLocation: LiveData<GeoPoint> get() = _currentLocation
+    val currentLocation: LiveData<GeoPoint> = _currentLocation
 
     private val _map: MutableLiveData<MapView> = MutableLiveData()
-    val map: LiveData<MapView> get() = _map
+    val map: LiveData<MapView> = _map
 
     fun updateLocation(context: Context) {
         getCurrentLocation(context) { location ->

@@ -24,6 +24,11 @@ fun getCurrentLocation(context: Context, setNewLocation: (geoPoint: GeoPoint) ->
     try {
         val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
+        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) && !locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+            Log.e("Location", "Location services are disabled.")
+            return
+        }
+
         if(ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000L, 1f)
             { updatedLocation ->

@@ -33,6 +33,11 @@ fun getMarkerOnLocation(mapView: MapView, context: Context, location: GeoPoint) 
             marker.icon = ContextCompat.getDrawable(context, R.drawable.marker_default_focused_base)!!
             marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
             mapView.overlays.add(marker)
+
+            marker.setOnMarkerClickListener { markerClicked, map ->
+                // Hier kannst du markerClicked.position verwenden
+                true
+            }
         }
 
         mapView.invalidate()

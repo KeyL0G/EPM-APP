@@ -2,6 +2,7 @@ package com.example.proof_of_concept
 
 import android.Manifest
 import android.content.Context
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -20,22 +22,29 @@ import androidx.compose.ui.unit.dp
 import com.example.proof_of_concept.Helper.hasLocationPermission
 import com.example.proof_of_concept.Viewmodels.Map_Viewmodel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.proof_of_concept.Viewmodels.Osmdroid_Viewmodel
 
 @Composable
 fun StartScreen(context: Context,onNavigationClick: () -> Unit) {
     val map_viewmodel: Map_Viewmodel = viewModel()
+    val osmdroid_viewmodel: Osmdroid_Viewmodel = viewModel()
     var hasPermission by remember { mutableStateOf(hasLocationPermission(context)) }
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { isGranted -> hasPermission = isGranted }
     )
 
+    var showFilterMenu by remember { mutableStateOf(false) }
     var buttonText by remember {
         if(!hasPermission)
             mutableStateOf("In der Nähe suchen?")
         else
             mutableStateOf("Sucht in der Nähe.")
     }
+
+    val map by map_viewmodel.map.observeAsState(initial = null)
+    val location by map_viewmodel.currentLocation.observeAsState(initial = null)
+
 //    var selectedTab by remember { mutableStateOf(0) }
 //    val toilettenListe = listOf(
 //        "Straße 1234",
@@ -44,7 +53,6 @@ fun StartScreen(context: Context,onNavigationClick: () -> Unit) {
 //        "Straße 121314",
 //        "Straße 151617"
 //    )
-    var showFilterMenu by remember { mutableStateOf(false) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -59,6 +67,11 @@ fun StartScreen(context: Context,onNavigationClick: () -> Unit) {
                     if (hasPermission) {
                         map_viewmodel.updateLocation(context)
                         map_viewmodel.moveMapToCurrentLocation()
+
+                        if(map != null && location != null)
+                            osmdroid_viewmodel.getToiletsFromLocation(map!!, context, location!!)
+                        else
+                            Log.e("WARN", "Location or Map not found")
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
@@ -77,8 +90,6 @@ fun StartScreen(context: Context,onNavigationClick: () -> Unit) {
                     .padding(12.dp),
                 style = MaterialTheme.typography.bodyMedium
             )
-
-//            Spacer(modifier = Modifier.height(8.dp))
 
 //            TabRow(
 //                selectedTabIndex = selectedTab,
