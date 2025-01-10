@@ -160,22 +160,7 @@ fun StartScreen(onNavigationClick: () -> Unit) {
             }
         }
 
-        // Karte füllt den Rest des Bildschirms aus
-        if (selectedTab == 0 || selectedTab == 1) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.BottomCenter)
-                    .height(200.dp) // Karte nimmt den unteren Bereich ein
-                    .background(Color(0xFFE0E0E0)) // Simulierte Karte
-            ) {
-                Text(
-                    "Kartenbereich",
-                    modifier = Modifier.align(Alignment.Center),
-                    color = Color.Gray
-                )
-            }
-        }
+      
 
         // Icons unten rechts
         Column(
