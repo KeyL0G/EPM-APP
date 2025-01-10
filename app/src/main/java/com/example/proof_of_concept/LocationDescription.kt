@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -32,7 +33,6 @@ fun LocationDescription() {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.3f))
     ) {
         Row(
             modifier = Modifier
@@ -43,6 +43,7 @@ fun LocationDescription() {
             Button(
                 onClick = { /* Handle "Zurück" click */ },
                 modifier = Modifier.size(width = 100.dp, height = 40.dp),
+                shape = RoundedCornerShape(10.dp),
                 contentPadding = PaddingValues(0.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.White,
@@ -62,6 +63,7 @@ fun LocationDescription() {
             Button(
                 onClick = { /* Handle "Route" click */ },
                 modifier = Modifier.size(width = 100.dp, height = 40.dp),
+                shape = RoundedCornerShape(10.dp),
                 contentPadding = PaddingValues(0.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Blue,
@@ -191,9 +193,3 @@ fun RatingBar(rating: Float) {
     }
 }
 
-
-@Preview(showBackground = true)
-@Composable
-fun LocationDescriptionPreview() {
-    LocationDescription()
-}
