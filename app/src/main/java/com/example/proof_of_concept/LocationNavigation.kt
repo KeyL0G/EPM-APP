@@ -229,10 +229,3 @@ fun LocationNavigation() {
         }
     }
 }
-
-
-@Preview(showBackground = true)
-@Composable
-fun LocationNavigationPreview() {
-    LocationNavigation()
-}
