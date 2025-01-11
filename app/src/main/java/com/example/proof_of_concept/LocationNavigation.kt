@@ -21,6 +21,11 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
@@ -29,10 +34,27 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.proof_of_concept.Viewmodels.Map_Viewmodel
+import com.example.proof_of_concept.Viewmodels.Osmdroid_Viewmodel
 
 
 @Composable
-fun LocationNavigation() {
+fun LocationNavigation(onBackNavigation: () -> Unit, onGoNavigation: () -> Unit) {
+    val map_viewmodel: Map_Viewmodel = viewModel()
+    val osmdroid_viewmodel: Osmdroid_Viewmodel = viewModel()
+    val routes by osmdroid_viewmodel.routes.observeAsState(initial = null)
+    var activeRoute by remember { mutableStateOf(0) }
+
+    if (routes != null) {
+        when (activeRoute) {
+            0 -> map_viewmodel.drawRoute(routes!!.routeCar[0]) //car
+            1 -> map_viewmodel.drawRoute(routes!!.routeFoot[0]) //foot
+            2 -> map_viewmodel.drawRoute(routes!!.routeBike[0]) //bike
+            3 -> map_viewmodel.drawRoute(routes!!.routeAccess[0]) //access
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -48,7 +70,7 @@ fun LocationNavigation() {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Button(
-                    onClick = { /* Handle "Zurück" click */ },
+                    onClick = onBackNavigation,
                     modifier = Modifier.size(width = 100.dp, height = 40.dp),
                     shape = RoundedCornerShape(10.dp),
                     contentPadding = PaddingValues(0.dp),
@@ -68,7 +90,7 @@ fun LocationNavigation() {
                 }
 
                 Button(
-                    onClick = { /* Handle "Route" click */ },
+                    onClick = onGoNavigation,
                     modifier = Modifier.size(width = 100.dp, height = 40.dp),
                     shape = RoundedCornerShape(10.dp),
                     contentPadding = PaddingValues(0.dp),
@@ -94,15 +116,16 @@ fun LocationNavigation() {
                     .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                // Erste Reihe
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceAround
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        IconButton(onClick = {}) {
+                        IconButton(onClick = { activeRoute = 0 }) {
                             Image(
-                                painter = painterResource(id = R.drawable.car_black),
+                                painter = painterResource(id =
+                                   if(activeRoute == 0) R.drawable.car_blue else R.drawable.car_black
+                                ),
                                 contentDescription = null,
                                 modifier = Modifier.size(35.dp),
                                 contentScale = ContentScale.Fit
@@ -112,9 +135,11 @@ fun LocationNavigation() {
                     }
 
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        IconButton(onClick = {}) {
+                        IconButton(onClick = { activeRoute = 1 }) {
                             Image(
-                                painter = painterResource(id = R.drawable.footprint_black),
+                                painter = painterResource(id =
+                                    if(activeRoute == 1) R.drawable.footprint_blue else R.drawable.footprint_black
+                                ),
                                 contentDescription = null,
                                 modifier = Modifier.size(35.dp),
                                 contentScale = ContentScale.Fit
@@ -124,9 +149,11 @@ fun LocationNavigation() {
                     }
 
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        IconButton(onClick = {}) {
+                        IconButton(onClick = { activeRoute = 2 }) {
                             Image(
-                                painter = painterResource(id = R.drawable.bike_black),
+                                painter = painterResource(id =
+                                    if(activeRoute == 2) R.drawable.bike_blue else R.drawable.bike_black
+                                ),
                                 contentDescription = null,
                                 modifier = Modifier.size(35.dp),
                                 contentScale = ContentScale.Fit
@@ -136,9 +163,11 @@ fun LocationNavigation() {
                     }
 
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        IconButton(onClick = {}) {
+                        IconButton(onClick = { activeRoute = 3 }) {
                             Image(
-                                painter = painterResource(id = R.drawable.accessible_black),
+                                painter = painterResource(id =
+                                    if(activeRoute == 3) R.drawable.accessible_blue else R.drawable.accessible_black
+                                ),
                                 contentDescription = null,
                                 modifier = Modifier.size(35.dp),
                                 contentScale = ContentScale.Fit

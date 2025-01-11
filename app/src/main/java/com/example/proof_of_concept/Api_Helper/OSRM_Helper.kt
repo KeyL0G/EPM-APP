@@ -1,6 +1,7 @@
 package com.example.proof_of_concept.Api_Helper
 
 import com.google.maps.android.PolyUtil
+import okhttp3.internal.wait
 import org.osmdroid.util.GeoPoint
 
 // RouteOption: routed-foot, routed-driving, routed-bike
@@ -13,7 +14,7 @@ fun getRoutesFromOSRM(routeOption: String, locationStart: GeoPoint, locationEnd:
             val geometryLineStep = routes.getJSONObject(0).getString("geometry")
             val decodeStep = PolyUtil.decode(geometryLineStep)
             decodeStep.forEach{ locations.add(GeoPoint(it.latitude, it.longitude)) }
-        }
+        }.wait()
 
         return locations
 }

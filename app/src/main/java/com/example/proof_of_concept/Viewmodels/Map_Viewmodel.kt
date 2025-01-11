@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import com.example.proof_of_concept.Helper.getCurrentLocation
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.Polyline
 
 class Map_Viewmodel: ViewModel() {
     private val _currentLocation: MutableLiveData<GeoPoint> = MutableLiveData()
@@ -22,13 +23,20 @@ class Map_Viewmodel: ViewModel() {
         }
     }
 
-    fun moveMapToCurrentLocation(){
+    fun moveMapToCurrentLocation() {
         if (map.value != null && currentLocation.value != null) {
             map.value!!.controller.setZoom(15.0)
             map.value!!.controller.setCenter(currentLocation.value!!)
         } else {
             Log.e("MAP_VIEWMOEL", "currentLocation or map are null")
         }
+    }
+
+    fun drawRoute(route: List<GeoPoint>) {
+        val line = Polyline()
+        line.setPoints(route)
+        map.value?.overlays?.add(line)
+        map.value?.invalidate()
     }
 
     fun updateMap(newMap: MapView) {

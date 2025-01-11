@@ -17,6 +17,9 @@ fun Main_App(context: Context) {
             context = context,
             onNavigationClick = {
                     selectedNavigation = "Settings"
+                },
+            onLocationClick = {
+                    selectedNavigation = "locationDescription"
                 }
             )
 
@@ -25,6 +28,24 @@ fun Main_App(context: Context) {
                     selectedNavigation = "Start"
                 }
             )
+
+        "locationDescription" -> LocationDescription(
+            onBackNavigation = {
+                selectedNavigation = "Start"
+            },
+            onGoNavigation = {
+                selectedNavigation = "locationNavigation"
+            }
+        )
+
+        "locationNavigation" -> LocationNavigation(
+            onBackNavigation = {
+                selectedNavigation = "locationDescription"
+            },
+            onGoNavigation = {
+                selectedNavigation = ""
+            }
+        )
     }
 
 }
