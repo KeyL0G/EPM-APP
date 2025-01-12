@@ -5,7 +5,7 @@ import okhttp3.internal.wait
 import org.osmdroid.util.GeoPoint
 
 // RouteOption: routed-foot, routed-driving, routed-bike
-fun getRoutesFromOSRM(routeOption: String, locationStart: GeoPoint, locationEnd: GeoPoint): List<GeoPoint> {
+suspend fun getRoutesFromOSRM(routeOption: String, locationStart: GeoPoint, locationEnd: GeoPoint): List<GeoPoint> {
         val OSRM = "https://routing.openstreetmap.de/${routeOption}/route/v1/foot/${locationStart.longitude},${locationStart.latitude};${locationEnd.longitude},${locationEnd.latitude}?overview=full&steps=true"
         val locations = mutableListOf<GeoPoint>()
 

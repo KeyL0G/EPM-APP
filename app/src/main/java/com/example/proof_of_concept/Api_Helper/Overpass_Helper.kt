@@ -10,7 +10,7 @@ import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 
-fun getStreet(location: GeoPoint):String {
+suspend fun getStreet(location: GeoPoint):String {
     val OverPass = "https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${location.latitude}&lon=${location.longitude}"
     var fullAddress = ""
     sendRequest(OverPass) { jsonObject ->
@@ -22,7 +22,7 @@ fun getStreet(location: GeoPoint):String {
 }
 
 data class Toilet(val geoPoint: GeoPoint, val option: MutableList<String>)
-fun getMarkerOnLocation(mapView: MapView, context: Context, location: GeoPoint): List<Toilet>{
+suspend fun getMarkerOnLocation(mapView: MapView, context: Context, location: GeoPoint): List<Toilet>{
     val OverPass = "https://overpass-api.de/api/interpreter"
     val query = """
         [out:json];

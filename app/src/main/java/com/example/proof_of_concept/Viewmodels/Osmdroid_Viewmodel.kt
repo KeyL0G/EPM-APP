@@ -1,6 +1,7 @@
 package com.example.proof_of_concept.Viewmodels
 
 import android.content.Context
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -8,6 +9,7 @@ import com.example.proof_of_concept.Api_Helper.getMarkerOnLocation
 import com.example.proof_of_concept.Api_Helper.getRouteFromOpenRouteService
 import com.example.proof_of_concept.Api_Helper.getRoutesFromOSRM
 import com.example.proof_of_concept.Api_Helper.getStreet
+import kotlinx.coroutines.launch
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 
@@ -44,23 +46,27 @@ class Osmdroid_Viewmodel: ViewModel() {
     }
 
     fun getToiletsFromLocation(mapView: MapView, context: Context, location: GeoPoint){
-        val toilet = getMarkerOnLocation(mapView, context, location)
-        toilet.forEach{ it ->
-            val toiletDetail = getStreet(it.geoPoint)
-            setToilets(ToiletDetail(toiletDetail, it.geoPoint, it.option))
+        viewModelScope.launch {
+            val toilet = getMarkerOnLocation(mapView, context, location)
+            toilet.forEach{ it ->
+                val toiletDetail = getStreet(it.geoPoint)
+                setToilets(ToiletDetail(toiletDetail, it.geoPoint, it.option))
+            }
         }
     }
 
     fun getRoutes(currentLocation: GeoPoint, toLocation: GeoPoint) {
-        val getRouteCar = getSpecialRoute("routed-car", "driving-car", currentLocation, toLocation)
-        val getRouteFoot = getSpecialRoute("routed-foot", "foot-walking", currentLocation, toLocation)
-        val getRouteBike = getSpecialRoute("routed-bike", "cycling-regular", currentLocation, toLocation)
-        val getRouteAccess = getSpecialRoute("", "wheelchair", currentLocation, toLocation)
-        val allRoutes = Routes(getRouteCar, getRouteFoot, getRouteBike, getRouteAccess)
-        setRoutes(allRoutes)
+        viewModelScope.launch {
+            val getRouteCar = getSpecialRoute("routed-car", "driving-car", currentLocation, toLocation)
+            val getRouteFoot = getSpecialRoute("routed-foot", "foot-walking", currentLocation, toLocation)
+            val getRouteBike = getSpecialRoute("routed-bike", "cycling-regular", currentLocation, toLocation)
+            val getRouteAccess = getSpecialRoute("", "wheelchair", currentLocation, toLocation)
+            val allRoutes = Routes(getRouteCar, getRouteFoot, getRouteBike, getRouteAccess)
+            setRoutes(allRoutes)
+        }
     }
 
-    private fun getSpecialRoute(optionA: String, optionB: String, currentLocation: GeoPoint, toLocation: GeoPoint): List<List<GeoPoint>> {
+    private suspend fun getSpecialRoute(optionA: String, optionB: String, currentLocation: GeoPoint, toLocation: GeoPoint): List<List<GeoPoint>> {
         val getRouteFromOSRM = getRoutesFromOSRM(optionA, currentLocation, toLocation)
         val getRouteFromOpenRouteService = getRouteFromOpenRouteService(optionB, currentLocation, toLocation)
         val allRoute = mutableListOf<List<GeoPoint>>()

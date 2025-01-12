@@ -11,7 +11,7 @@ import okhttp3.Response
 import okio.IOException
 import org.json.JSONObject
 
-fun sendRequestWithAuthorizationAndBody(
+suspend fun sendRequestWithAuthorizationAndBody(
     url: String,
     apiKey: String,
     jsonBody: String,
@@ -39,7 +39,7 @@ fun sendRequestWithAuthorizationAndBody(
     })
 }
 
-fun sendRequestWithBody(URL: String, query: String, mediaType: MediaType, callback: (jsonObject: JSONObject) -> Unit) {
+suspend fun sendRequestWithBody(URL: String, query: String, mediaType: MediaType, callback: (jsonObject: JSONObject) -> Unit) {
     val client = OkHttpClient()
     val body = query.toRequestBody(mediaType)
 
@@ -60,7 +60,7 @@ fun sendRequestWithBody(URL: String, query: String, mediaType: MediaType, callba
     })
 }
 
-fun sendRequest(URL: String, callback: (jsonObject: JSONObject) -> Unit) {
+suspend fun sendRequest(URL: String, callback: (jsonObject: JSONObject) -> Unit) {
     val client = OkHttpClient()
     val request = Request.Builder()
         .url(URL)

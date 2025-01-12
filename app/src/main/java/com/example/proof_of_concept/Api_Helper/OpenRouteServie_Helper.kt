@@ -3,10 +3,11 @@ package com.example.proof_of_concept.Api_Helper
 import com.example.proof_of_concept.BuildConfig
 import com.google.maps.android.PolyUtil
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.internal.wait
 import org.json.JSONObject
 import org.osmdroid.util.GeoPoint
 
-fun getRouteFromOpenRouteService(routeOption: String, locationStart: GeoPoint, locationEnd: GeoPoint): List<List<GeoPoint>> {
+suspend fun getRouteFromOpenRouteService(routeOption: String, locationStart: GeoPoint, locationEnd: GeoPoint): List<List<GeoPoint>> {
     val OpenRouteService = "https://api.openrouteservice.org/v2/directions/${routeOption}"
     val apiKey = BuildConfig.API_KEY
     val jsonBody = JSONObject()
@@ -32,7 +33,7 @@ fun getRouteFromOpenRouteService(routeOption: String, locationStart: GeoPoint, l
             decodeStep.forEach{ route.add(GeoPoint(it.latitude, it.longitude)) }
             locations.add(route)
         }
-    }
+    }.wait()
 
     return locations
 }
