@@ -49,7 +49,6 @@ fun StartScreen(context: Context,onNavigationClick: () -> Unit, onLocationClick:
             }
         }
     )
-
     var showFilterMenu by remember { mutableStateOf(false) }
     var buttonText by remember {
         if(!hasPermission)

@@ -31,7 +31,7 @@ fun getCurrentLocation(context: Context, setNewLocation: (geoPoint: GeoPoint) ->
 
         if(ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000L, 1f)
-            { updatedLocation ->
+            { updatedLocation -> Log.e("Location","${updatedLocation.latitude},${updatedLocation.longitude}")
                  setNewLocation(GeoPoint(updatedLocation.latitude, updatedLocation.longitude))
             }
         }

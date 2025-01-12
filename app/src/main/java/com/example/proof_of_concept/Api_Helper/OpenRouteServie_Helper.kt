@@ -1,5 +1,6 @@
 package com.example.proof_of_concept.Api_Helper
 
+import android.util.Log
 import com.example.proof_of_concept.BuildConfig
 import com.google.maps.android.PolyUtil
 import okhttp3.MediaType.Companion.toMediaType
@@ -24,16 +25,22 @@ suspend fun getRouteFromOpenRouteService(routeOption: String, locationStart: Geo
 
     val locations = mutableListOf<List<GeoPoint>>()
 
-    sendRequestWithAuthorizationAndBody(OpenRouteService, apiKey, jsonBody.toString(), "application/json".toMediaType()) { jsonObject ->
+    try {
+        val jsonObject = sendRequestWithAuthorizationAndBody(OpenRouteService, apiKey, jsonBody.toString(), "application/json".toMediaType())
+
         val routes = jsonObject.getJSONArray("routes")
         for (i in 0 until routes.length()) {
             val geometryLineStep = routes.getJSONObject(i).getString("geometry")
+
             val decodeStep = PolyUtil.decode(geometryLineStep)
             val route = mutableListOf<GeoPoint>()
-            decodeStep.forEach{ route.add(GeoPoint(it.latitude, it.longitude)) }
+            decodeStep.forEach { route.add(GeoPoint(it.latitude, it.longitude)) }
+
             locations.add(route)
         }
-    }.wait()
+    } catch (e: Exception) {
+        Log.e("getRouteFromOpenRouteService", "Failed to get route: ${e.message}")
+    }
 
     return locations
 }

@@ -25,7 +25,7 @@ class Map_Viewmodel: ViewModel() {
 
     fun moveMapToCurrentLocation() {
         if (map.value != null && currentLocation.value != null) {
-            map.value!!.controller.setZoom(15.0)
+            map.value!!.controller.setZoom(20.0)
             map.value!!.controller.setCenter(currentLocation.value!!)
         } else {
             Log.e("MAP_VIEWMOEL", "currentLocation or map are null")

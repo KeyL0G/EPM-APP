@@ -1,6 +1,7 @@
 package com.example.proof_of_concept.Viewmodels
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -47,6 +48,7 @@ class Osmdroid_Viewmodel: ViewModel() {
 
     fun getToiletsFromLocation(mapView: MapView, context: Context, location: GeoPoint){
         viewModelScope.launch {
+            Log.e("Viewmodel","Test")
             val toilet = getMarkerOnLocation(mapView, context, location)
             toilet.forEach{ it ->
                 val toiletDetail = getStreet(it.geoPoint)

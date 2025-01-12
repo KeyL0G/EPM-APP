@@ -24,8 +24,8 @@ import com.example.proof_of_concept.Viewmodels.Map_Viewmodel
 import com.example.proof_of_concept.Viewmodels.Osmdroid_Viewmodel
 
 class MainActivity : ComponentActivity() {
-    private val map_viewmodel: Map_Viewmodel by viewModels()
-    private val osmdroid_viewmodel: Osmdroid_Viewmodel by viewModels()
+    private val mapViewModel: Map_Viewmodel by viewModels()
+    private val osmdroidViewModel: Osmdroid_Viewmodel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,21 +33,19 @@ class MainActivity : ComponentActivity() {
         Configuration.getInstance().userAgentValue = packageName
 
         setContent {
-            val map by map_viewmodel.map.observeAsState(initial = null)
-            val location by map_viewmodel.currentLocation.observeAsState(initial = null)
+            val map by mapViewModel.map.observeAsState(initial = null)
+            val location by mapViewModel.currentLocation.observeAsState(initial = null)
             val context = LocalContext.current
             var hasPermission by remember { mutableStateOf(hasLocationPermission(context)) }
+
             val permissionLauncher = rememberLauncherForActivityResult(
                 contract = ActivityResultContracts.RequestPermission(),
                 onResult = { isGranted ->
                     hasPermission = isGranted
-                    if (hasPermission) {
-                        map_viewmodel.updateLocation(context)
-                        map_viewmodel.moveMapToCurrentLocation()
-                        if(map != null && location != null)
-                            osmdroid_viewmodel.getToiletsFromLocation(map!!, context, location!!)
-                        else
-                            Log.e("WARN", "Location or Map not found")
+                    if (isGranted) {
+                        mapViewModel.updateLocation(context)
+                    } else {
+                        Log.e("Permission", "Location permission denied")
                     }
                 }
             )
@@ -57,10 +55,10 @@ class MainActivity : ComponentActivity() {
                     AndroidView(
                         factory = { context ->
                             MapView(context).apply {
-                                map_viewmodel.updateMap(this)
-                                map?.setTileSource(TileSourceFactory.MAPNIK)
-                                map?.isTilesScaledToDpi = true
-                                map?.setMultiTouchControls(true)
+                                setTileSource(TileSourceFactory.MAPNIK)
+                                isTilesScaledToDpi = true
+                                setMultiTouchControls(true)
+                                mapViewModel.updateMap(this)
                             }
                         },
                         modifier = Modifier.fillMaxSize()
@@ -68,18 +66,23 @@ class MainActivity : ComponentActivity() {
 
                     Main_App(context = context)
                 }
-            }
 
-            LaunchedEffect(key1 = hasPermission) {
-                if (!hasPermission) {
-                    permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-                } else {
-                    map_viewmodel.updateLocation(context)
-                    map_viewmodel.moveMapToCurrentLocation()
-                    if(map != null && location != null)
-                        osmdroid_viewmodel.getToiletsFromLocation(map!!, context, location!!)
-                    else
-                        Log.e("WARN", "Location or Map not found")
+                LaunchedEffect(key1 = hasPermission) {
+
+                    if (!hasPermission) {
+                        permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                    }else{
+                        mapViewModel.updateLocation(context)
+                    }
+                }
+
+                LaunchedEffect(key1 = map, key2 = location) {
+                    if (map != null && location != null) {
+                        mapViewModel.moveMapToCurrentLocation()
+                        osmdroidViewModel.getToiletsFromLocation(map!!, context, location!!)
+                    } else {
+                        Log.e("WARN", "Map or Location is not ready")
+                    }
                 }
             }
         }
@@ -87,11 +90,11 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        map_viewmodel.onResume()
+        mapViewModel.onResume()
     }
 
     override fun onPause() {
         super.onPause()
-        map_viewmodel.onPause()
+        mapViewModel.onPause()
     }
 }
