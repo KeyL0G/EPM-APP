@@ -61,14 +61,25 @@ class MainActivity : ComponentActivity() {
                                 map?.setTileSource(TileSourceFactory.MAPNIK)
                                 map?.isTilesScaledToDpi = true
                                 map?.setMultiTouchControls(true)
-                                permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-
                             }
                         },
                         modifier = Modifier.fillMaxSize()
                     )
 
                     Main_App(context = context)
+                }
+            }
+
+            LaunchedEffect(key1 = hasPermission) {
+                if (!hasPermission) {
+                    permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                } else {
+                    map_viewmodel.updateLocation(context)
+                    map_viewmodel.moveMapToCurrentLocation()
+                    if(map != null && location != null)
+                        osmdroid_viewmodel.getToiletsFromLocation(map!!, context, location!!)
+                    else
+                        Log.e("WARN", "Location or Map not found")
                 }
             }
         }
