@@ -41,7 +41,7 @@ fun StartScreen(context: Context,onNavigationClick: () -> Unit, onLocationClick:
             hasPermission = isGranted
             if (hasPermission) {
                 map_viewmodel.updateLocation(context)
-                map_viewmodel.moveMapToCurrentLocation()
+                map_viewmodel.moveMapToCurrentLocation(context)
                 if(map != null && location != null)
                     osmdroid_viewmodel.getToiletsFromLocation(map!!, context, location!!)
                 else

@@ -78,7 +78,7 @@ class MainActivity : ComponentActivity() {
 
                 LaunchedEffect(key1 = map, key2 = location) {
                     if (map != null && location != null) {
-                        mapViewModel.moveMapToCurrentLocation()
+                        mapViewModel.moveMapToCurrentLocation(context)
                         osmdroidViewModel.getToiletsFromLocation(map!!, context, location!!)
                     } else {
                         Log.e("WARN", "Map or Location is not ready")
