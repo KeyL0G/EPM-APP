@@ -61,11 +61,8 @@ class MainActivity : ComponentActivity() {
                                 map?.setTileSource(TileSourceFactory.MAPNIK)
                                 map?.isTilesScaledToDpi = true
                                 map?.setMultiTouchControls(true)
-                                if (!hasPermission) {
-                                    permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-                                    map_viewmodel.updateLocation(context)
-                                    map_viewmodel.moveMapToCurrentLocation()
-                                }
+                                permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+
                             }
                         },
                         modifier = Modifier.fillMaxSize()
