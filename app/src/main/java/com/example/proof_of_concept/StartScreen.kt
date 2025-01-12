@@ -66,13 +66,7 @@ fun StartScreen(context: Context,onNavigationClick: () -> Unit, onLocationClick:
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Button(
-                onClick = {
-                    if (!hasPermission) {
-                        permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-                        map_viewmodel.updateLocation(context)
-                        map_viewmodel.moveMapToCurrentLocation()
-                    }
-                },
+                onClick = { permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION) },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !hasPermission
             ) {
