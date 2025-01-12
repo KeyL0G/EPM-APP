@@ -33,14 +33,24 @@ class MainActivity : ComponentActivity() {
         Configuration.getInstance().userAgentValue = packageName
 
         setContent {
+            val map by map_viewmodel.map.observeAsState(initial = null)
+            val location by map_viewmodel.currentLocation.observeAsState(initial = null)
             val context = LocalContext.current
             var hasPermission by remember { mutableStateOf(hasLocationPermission(context)) }
             val permissionLauncher = rememberLauncherForActivityResult(
                 contract = ActivityResultContracts.RequestPermission(),
-                onResult = { isGranted -> hasPermission = isGranted }
+                onResult = { isGranted ->
+                    hasPermission = isGranted
+                    if (hasPermission) {
+                        map_viewmodel.updateLocation(context)
+                        map_viewmodel.moveMapToCurrentLocation()
+                        if(map != null && location != null)
+                            osmdroid_viewmodel.getToiletsFromLocation(map!!, context, location!!)
+                        else
+                            Log.e("WARN", "Location or Map not found")
+                    }
+                }
             )
-            val map by map_viewmodel.map.observeAsState(initial = null)
-            val location by map_viewmodel.currentLocation.observeAsState(initial = null)
 
             Proof_Of_ConceptTheme {
                 Box(modifier = Modifier.fillMaxSize()) {
@@ -51,15 +61,7 @@ class MainActivity : ComponentActivity() {
                                 map?.setTileSource(TileSourceFactory.MAPNIK)
                                 map?.isTilesScaledToDpi = true
                                 map?.setMultiTouchControls(true)
-
-                                if (hasPermission) {
-                                    map_viewmodel.updateLocation(context)
-                                    map_viewmodel.moveMapToCurrentLocation()
-                                    if(map != null && location != null)
-                                        osmdroid_viewmodel.getToiletsFromLocation(map!!, context, location!!)
-                                    else
-                                        Log.e("WARN", "Location or Map not found")
-                                } else {
+                                if (!hasPermission) {
                                     permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
                                     map_viewmodel.updateLocation(context)
                                     map_viewmodel.moveMapToCurrentLocation()

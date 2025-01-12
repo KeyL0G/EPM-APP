@@ -29,10 +29,25 @@ import com.example.proof_of_concept.Viewmodels.Osmdroid_Viewmodel
 fun StartScreen(context: Context,onNavigationClick: () -> Unit, onLocationClick: () -> Unit) {
     val map_viewmodel: Map_Viewmodel = viewModel()
     val osmdroid_viewmodel: Osmdroid_Viewmodel = viewModel()
+    val map by map_viewmodel.map.observeAsState(initial = null)
+    val location by map_viewmodel.currentLocation.observeAsState(initial = null)
+    val toilets by osmdroid_viewmodel.currentToilets.observeAsState(initial = emptyList())
+    var selectedTab by remember { mutableStateOf(0) }
+
     var hasPermission by remember { mutableStateOf(hasLocationPermission(context)) }
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
-        onResult = { isGranted -> hasPermission = isGranted }
+        onResult = { isGranted ->
+            hasPermission = isGranted
+            if (hasPermission) {
+                map_viewmodel.updateLocation(context)
+                map_viewmodel.moveMapToCurrentLocation()
+                if(map != null && location != null)
+                    osmdroid_viewmodel.getToiletsFromLocation(map!!, context, location!!)
+                else
+                    Log.e("WARN", "Location or Map not found")
+            }
+        }
     )
 
     var showFilterMenu by remember { mutableStateOf(false) }
@@ -43,11 +58,6 @@ fun StartScreen(context: Context,onNavigationClick: () -> Unit, onLocationClick:
             mutableStateOf("Sucht in der Nähe.")
     }
 
-    val map by map_viewmodel.map.observeAsState(initial = null)
-    val location by map_viewmodel.currentLocation.observeAsState(initial = null)
-    val toilets by osmdroid_viewmodel.currentToilets.observeAsState(initial = emptyList())
-    var selectedTab by remember { mutableStateOf(0) }
-
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
@@ -57,15 +67,10 @@ fun StartScreen(context: Context,onNavigationClick: () -> Unit, onLocationClick:
         ) {
             Button(
                 onClick = {
-                    permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-                    if (hasPermission) {
+                    if (!hasPermission) {
+                        permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
                         map_viewmodel.updateLocation(context)
                         map_viewmodel.moveMapToCurrentLocation()
-
-                        if(map != null && location != null)
-                            osmdroid_viewmodel.getToiletsFromLocation(map!!, context, location!!)
-                        else
-                            Log.e("WARN", "Location or Map not found")
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
@@ -77,7 +82,7 @@ fun StartScreen(context: Context,onNavigationClick: () -> Unit, onLocationClick:
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = if (location == null) "Suchen ..." else getStreet(location!!),
+                text = if (location == null) "Suchen ..." else "Sucht aktuell nicht!",
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Color.White, shape = MaterialTheme.shapes.medium)
