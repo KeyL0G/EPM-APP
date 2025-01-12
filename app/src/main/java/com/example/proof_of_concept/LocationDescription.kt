@@ -21,15 +21,25 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.proof_of_concept.Viewmodels.Map_Viewmodel
+import com.example.proof_of_concept.Viewmodels.Osmdroid_Viewmodel
+import com.example.proof_of_concept.Viewmodels.ToiletDetail
 
 @Composable
-fun LocationDescription() {
+fun LocationDescription(onBackNavigation: () -> Unit, onGoNavigation: () -> Unit) {
+    val map_viewmodel: Map_Viewmodel = viewModel()
+    val osmdroid_viewmodel: Osmdroid_Viewmodel = viewModel()
+    val selectedToilet by osmdroid_viewmodel.currentSelectedToilet.observeAsState(initial = ToiletDetail())
+    val currentLocation by map_viewmodel.currentLocation.observeAsState(initial = null)
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -41,7 +51,7 @@ fun LocationDescription() {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Button(
-                onClick = { /* Handle "Zurück" click */ },
+                onClick = onBackNavigation,
                 modifier = Modifier.size(width = 100.dp, height = 40.dp),
                 shape = RoundedCornerShape(10.dp),
                 contentPadding = PaddingValues(0.dp),
@@ -61,7 +71,10 @@ fun LocationDescription() {
             }
 
             Button(
-                onClick = { /* Handle "Route" click */ },
+                onClick = {
+                    osmdroid_viewmodel.getRoutes(currentLocation!!, selectedToilet.location)
+                    onGoNavigation()
+                },
                 modifier = Modifier.size(width = 100.dp, height = 40.dp),
                 shape = RoundedCornerShape(10.dp),
                 contentPadding = PaddingValues(0.dp),
@@ -97,7 +110,7 @@ fun LocationDescription() {
                     modifier = Modifier.padding(16.dp)
                 ) {
                     Text(
-                        text = "Straße 123",
+                        text = selectedToilet.fullAddress,
                         style = MaterialTheme.typography.titleLarge,
                         color = Color.Black,
                         modifier = Modifier.padding(bottom = 8.dp)
@@ -122,26 +135,16 @@ fun LocationDescription() {
                     )
 
                     Row(modifier = Modifier.padding(5.dp, 0.dp,0.dp,10.dp).align(Alignment.Start)) {
-                        Text(
-                            text = "Kostenlos",
-                            style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.background(Color.Blue).padding(5.dp),
-                            color = Color.White
-                        )
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Text(
-                            text = "Barrierefrei",
-                            style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.background(Color.Blue).padding(5.dp),
-                            color = Color.White
-                        )
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Text(
-                            text = "Wickelstation",
-                            style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.background(Color.Blue).padding(5.dp),
-                            color = Color.White
-                        )
+
+                        selectedToilet.options.forEach{ it ->
+                            Text(
+                                text = it,
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier.background(Color.Blue).padding(5.dp),
+                                color = Color.White
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(1.dp).fillMaxWidth().background(Color.Black))

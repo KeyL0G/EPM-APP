@@ -9,16 +9,17 @@ import androidx.compose.runtime.setValue
 import org.osmdroid.views.MapView
 
 @Composable
-fun Main_App(map: MapView?, context: Context, askLocationPermission: () -> Unit) {
+fun Main_App(context: Context) {
     var selectedNavigation by remember{ mutableStateOf("Start") }
 
     when(selectedNavigation){
         "Start" -> StartScreen(
+            context = context,
             onNavigationClick = {
                     selectedNavigation = "Settings"
                 },
-                askLocationPermission = {
-                    askLocationPermission()
+            onLocationClick = {
+                    selectedNavigation = "locationDescription"
                 }
             )
 
@@ -27,6 +28,24 @@ fun Main_App(map: MapView?, context: Context, askLocationPermission: () -> Unit)
                     selectedNavigation = "Start"
                 }
             )
+
+        "locationDescription" -> LocationDescription(
+            onBackNavigation = {
+                selectedNavigation = "Start"
+            },
+            onGoNavigation = {
+                selectedNavigation = "locationNavigation"
+            }
+        )
+
+        "locationNavigation" -> LocationNavigation(
+            onBackNavigation = {
+                selectedNavigation = "locationDescription"
+            },
+            onGoNavigation = {
+                selectedNavigation = ""
+            }
+        )
     }
 
 }
