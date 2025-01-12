@@ -8,6 +8,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.proof_of_concept.Helper.getCurrentLocation
 import com.example.proof_of_concept.R
+import okhttp3.Route
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
@@ -19,6 +20,16 @@ class Map_Viewmodel: ViewModel() {
     var oldLocation: GeoPoint = currentLocation.value?: GeoPoint(0.0,0.0)
     private val _map: MutableLiveData<MapView> = MutableLiveData()
     val map: LiveData<MapView> = _map
+    private val _currentRoute: MutableLiveData<List<GeoPoint>> = MutableLiveData()
+    val currentRoute: LiveData<List<GeoPoint>> = _currentRoute
+    var oldRoute: List<GeoPoint> = currentRoute.value?: mutableListOf(GeoPoint(0.0,0.0))
+
+    fun updateRoute(route: List<GeoPoint>) {
+        if (currentRoute.value != null){
+            oldRoute = currentRoute.value!!
+        }
+        _currentRoute.value = route
+    }
 
     fun updateLocation(context: Context) {
         getCurrentLocation(context) { location ->
@@ -50,11 +61,20 @@ class Map_Viewmodel: ViewModel() {
     }
 
     fun drawRoute(route: List<GeoPoint>) {
+        var removeLine = Polyline()
+        removeLine.setPoints(oldRoute)
+
+        removeLine?.let {
+            map.value?.overlays?.remove(it)
+        }
+
+
         val line = Polyline()
         line.setPoints(route)
         map.value?.overlays?.add(line)
         map.value?.invalidate()
     }
+
 
     fun updateMap(newMap: MapView) {
         _map.value = newMap

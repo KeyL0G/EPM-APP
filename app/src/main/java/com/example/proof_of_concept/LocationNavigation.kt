@@ -48,10 +48,18 @@ fun LocationNavigation(onBackNavigation: () -> Unit, onGoNavigation: () -> Unit)
 
     if (routes != null) {
         when (activeRoute) {
-            0 -> map_viewmodel.drawRoute(routes!!.routeCar[0]) //car
-            1 -> map_viewmodel.drawRoute(routes!!.routeFoot[0]) //foot
-            2 -> map_viewmodel.drawRoute(routes!!.routeBike[0]) //bike
-            3 -> map_viewmodel.drawRoute(routes!!.routeAccess[0]) //access
+            0 -> {
+                map_viewmodel.updateRoute(routes!!.routeCar[0])
+                map_viewmodel.drawRoute(routes!!.routeCar[0])} //car
+            1 -> {
+                map_viewmodel.updateRoute(routes!!.routeFoot[0])
+                map_viewmodel.drawRoute(routes!!.routeFoot[0])}//foot
+            2 -> {
+                map_viewmodel.updateRoute(routes!!.routeBike[0])
+                map_viewmodel.drawRoute(routes!!.routeBike[0])}//bike
+            3 -> {
+                map_viewmodel.updateRoute(routes!!.routeAccess[0])
+                map_viewmodel.drawRoute(routes!!.routeAccess[0])} //access
         }
     }
 

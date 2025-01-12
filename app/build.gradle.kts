@@ -69,6 +69,7 @@ dependencies {
     implementation(libs.activity.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.lifecycle.viewmodel.ktx)
+    implementation(libs.jsoup.jsoup)
 
     //OpenStreetMap Library
     implementation(libs.osmdroid.android)

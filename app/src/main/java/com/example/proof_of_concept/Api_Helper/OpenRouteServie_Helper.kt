@@ -5,6 +5,7 @@ import com.example.proof_of_concept.BuildConfig
 import com.google.maps.android.PolyUtil
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.internal.wait
+import org.json.JSONArray
 import org.json.JSONObject
 import org.osmdroid.util.GeoPoint
 
@@ -13,11 +14,22 @@ suspend fun getRouteFromOpenRouteService(routeOption: String, locationStart: Geo
     val apiKey = BuildConfig.API_KEY
     val jsonBody = JSONObject()
 
-    val coordinates = listOf(
-        listOf(locationStart.longitude, locationStart.latitude),
-        listOf(locationEnd.longitude, locationEnd.latitude)
-    )
-    jsonBody.put("coordinates", coordinates)
+    val coordinatesArray = JSONArray()
+
+    val startCoordinate = JSONArray().apply {
+        put(locationStart.longitude)
+        put(locationStart.latitude)
+    }
+
+    val endCoordinate = JSONArray().apply {
+        put(locationEnd.longitude)
+        put(locationEnd.latitude)
+    }
+
+    coordinatesArray.put(startCoordinate)
+    coordinatesArray.put(endCoordinate)
+
+    jsonBody.put("coordinates", coordinatesArray)
 
     val alternativeRoutes = JSONObject()
     alternativeRoutes.put("target_count", 3)
@@ -44,3 +56,4 @@ suspend fun getRouteFromOpenRouteService(routeOption: String, locationStart: Geo
 
     return locations
 }
+

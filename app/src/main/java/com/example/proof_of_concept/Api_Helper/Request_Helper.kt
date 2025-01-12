@@ -21,7 +21,7 @@ suspend fun sendRequestWithAuthorizationAndBody(
 
         val request = Request.Builder()
             .url(url)
-            .addHeader("Authorization", apiKey)
+            .addHeader("Authorization", "Bearer $apiKey")
             .post(body)
             .build()
 
@@ -99,6 +99,32 @@ suspend fun sendRequest(
                     continuation.resume(responseAsJson)
                 } catch (e: Exception) {
                     Log.e("RequestHandler", "Parsing error: ${e.message}")
+                    continuation.resumeWithException(e)
+                }
+            }
+        })
+    }
+}
+suspend fun sendRequestWithHTML(url: String): String {
+    return suspendCoroutine { continuation ->
+        val client = OkHttpClient()
+
+        val request = Request.Builder()
+            .url(url)
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                Log.e("RequestHandler", "Message: ${e.message}")
+                continuation.resumeWithException(e)
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                try {
+                    val responseAsString = response.body!!.string()
+                    continuation.resume(responseAsString)
+                } catch (e: Exception) {
+                    Log.e("RequestHandler", "Error parsing HTML: ${e.message}")
                     continuation.resumeWithException(e)
                 }
             }

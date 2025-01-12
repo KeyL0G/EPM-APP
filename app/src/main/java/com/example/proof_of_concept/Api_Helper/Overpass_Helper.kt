@@ -10,18 +10,25 @@ import okhttp3.internal.wait
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
+import org.jsoup.Jsoup
+
 
 suspend fun getStreet(location: GeoPoint): String {
-    val OverPass = "https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${location.latitude}&lon=${location.longitude}"
+    val overPassUrl = "https://nominatim.openstreetmap.org/reverse?format=html&lat=${location.latitude}&lon=${location.longitude}"
+
     return try {
-        val jsonObject = sendRequest(OverPass)
-        val address = jsonObject.getJSONObject("address")
-        "${address.optString("road", "Unknown Road")} ${address.optString("house_number", "")}".trim()
+        val htmlContent = sendRequestWithHTML(overPassUrl)
+        val document = Jsoup.parse(htmlContent)
+        val addressElement = document.select("div#address")
+        val road = addressElement.select("span.road").text()
+        val houseNumber = addressElement.select("span.house_number").text()
+        "${road} ${houseNumber}".trim()
     } catch (e: Exception) {
         Log.e("getStreet", "Failed to get street information: ${e.message}")
         "Unknown Address"
     }
 }
+
 
 
 data class Toilet(val geoPoint: GeoPoint, val option: MutableList<String>)
