@@ -38,7 +38,6 @@ suspend fun getRouteFromOpenRouteService(routeOption: String, locationStart: Geo
     val locations = mutableListOf<List<GeoPoint>>()
 
     try {
-        Log.e("apiKEY","$apiKey")
         val jsonObject = sendRequestWithAuthorizationAndBody(OpenRouteService, apiKey, jsonBody.toString(), "application/json".toMediaType())
 
         val routes = jsonObject.getJSONArray("routes")

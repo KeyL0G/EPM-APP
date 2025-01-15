@@ -42,6 +42,8 @@ class MainActivity : ComponentActivity() {
                 contract = ActivityResultContracts.RequestPermission(),
                 onResult = { isGranted ->
                     hasPermission = isGranted
+                    mapViewModel.updatePermission(hasPermission)
+
                     if (isGranted) {
                         mapViewModel.updateLocation(context)
                     } else {

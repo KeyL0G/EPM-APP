@@ -57,8 +57,14 @@ suspend fun getMarkerOnLocation(mapView: MapView, context: Context, location: Ge
 
             val tag = element.optJSONObject("tags")
             val fee = tag?.optString("fee", "unknown") ?: "unknown"
+            val changingTable = tag?.optString("changing_table", "unknown") ?: "unknown"
+            val wheelchair = tag?.optString("wheelchair", "unknown") ?: "unknown"
 
-            val options: MutableList<String> = mutableListOf("fee: $fee")
+
+            val options: MutableList<String> = mutableListOf(
+                "fee: $fee",
+                "changing_table: $changingTable",
+                "wheelchair: $wheelchair")
 
             toilets.add(Toilet(GeoPoint(lat, lon), options))
         }

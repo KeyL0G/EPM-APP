@@ -68,7 +68,7 @@ class Osmdroid_Viewmodel: ViewModel() {
                 val routeCar = getSpecialRoute("routed-car", "driving-car", currentLocation, toLocation)
                 val routeFoot = getSpecialRoute("routed-foot", "foot-walking", currentLocation, toLocation)
                 val routeBike = getSpecialRoute("routed-bike", "cycling-regular", currentLocation, toLocation)
-                val routeAccess = getSpecialRoute("", "wheelchair", currentLocation, toLocation)
+                val routeAccess = getSpecialRoute("routed-foot", "wheelchair", currentLocation, toLocation).asReversed()
                 val allRoutes = Routes(routeCar, routeFoot, routeBike, routeAccess)
                 setRoutes(allRoutes)
             } catch (e: Exception) {

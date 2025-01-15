@@ -13,6 +13,14 @@ import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Polyline
 
+enum class Navigation_Page {
+    SETTINGS,
+    START,
+    LOCATIONDESCRIPTION,
+    LOCATIONNAVIGATION,
+    STARTROUTE
+}
+
 class Map_Viewmodel: ViewModel() {
     private val _currentLocation: MutableLiveData<GeoPoint> = MutableLiveData()
     val currentLocation: LiveData<GeoPoint> = _currentLocation
@@ -22,6 +30,18 @@ class Map_Viewmodel: ViewModel() {
     private val _currentRoute: MutableLiveData<List<GeoPoint>> = MutableLiveData()
     val currentRoute: LiveData<List<GeoPoint>> = _currentRoute
     var oldRoute: List<GeoPoint> = currentRoute.value?: mutableListOf(GeoPoint(0.0,0.0))
+    private val _hasPermission: MutableLiveData<Boolean> = MutableLiveData(false)
+    val hasPermission: LiveData<Boolean> = _hasPermission
+    private val _navigationPage: MutableLiveData<Navigation_Page> = MutableLiveData()
+    val navigationPage: LiveData<Navigation_Page> = _navigationPage
+
+    fun updateNavigationPage(value: Navigation_Page){
+        _navigationPage.value = value
+    }
+
+    fun updatePermission(value: Boolean){
+        _hasPermission.value = value
+    }
 
     fun updateRoute(route: List<GeoPoint>) {
 
@@ -54,11 +74,25 @@ class Map_Viewmodel: ViewModel() {
             marker.icon = ContextCompat.getDrawable(context, R.drawable.near_me_blue)!!
             marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
             map.value!!.overlays.add(marker)
-            map.value!!.controller.setZoom(15.0)
+            map.value!!.controller.setZoom(18.0)
             map.value!!.controller.setCenter(currentLocation.value!!)
         } else {
             Log.e("MAP_VIEWMOEL", "currentLocation or map are null")
         }
+    }
+
+    fun deleteRouteFromMap(route: List<GeoPoint>?){
+        var removeLine = Polyline()
+        removeLine.setPoints(oldRoute)
+        removeLine?.let {
+            var overlayFilter = map.value?.overlays?.filter { it is Polyline }
+            overlayFilter?.forEach{
+                if (it is Polyline){
+                    map.value?.overlays?.remove(it)
+                }
+            }
+        }
+
     }
 
     fun drawRoute(route: List<GeoPoint>) {
