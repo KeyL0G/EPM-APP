@@ -53,7 +53,6 @@ suspend fun getMarkerOnLocation(mapView: MapView, context: Context, location: Ge
         val option: MutableList<String> = mutableListOf()
         if (tag.getString("fee") != null || tag.getString("fee") != "yes") option.add(tag.getString("fee"))
         toilets.add(Toilet(GeoPoint(lat, lon), option))
-        Log.e("Lat", "${toilets[0]}")
     }
 
     // Marker setzen
