@@ -10,6 +10,7 @@ import com.example.proof_of_concept.Api_Helper.getMarkerOnLocation
 import com.example.proof_of_concept.Api_Helper.getRouteFromOpenRouteService
 import com.example.proof_of_concept.Api_Helper.getRoutesFromOSRM
 import com.example.proof_of_concept.Api_Helper.getStreet
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
@@ -53,6 +54,7 @@ class Osmdroid_Viewmodel: ViewModel() {
                 toilets.forEach { toilet ->
                     val street = getStreet(toilet.geoPoint)
                     setToilets(ToiletDetail(street, toilet.geoPoint, toilet.option))
+                    delay(1000L)
                 }
             } catch (e: Exception) {
                 Log.e("Osmdroid_Viewmodel", "Failed to get toilets from location: ${e.message}")
