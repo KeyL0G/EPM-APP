@@ -22,7 +22,6 @@ import androidx.compose.ui.unit.dp
 import com.example.proof_of_concept.Helper.hasLocationPermission
 import com.example.proof_of_concept.Viewmodels.Map_Viewmodel
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.proof_of_concept.Api_Helper.getStreet
 import com.example.proof_of_concept.Viewmodels.Osmdroid_Viewmodel
 
 @Composable

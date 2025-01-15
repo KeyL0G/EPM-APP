@@ -34,42 +34,55 @@ suspend fun getStreet(location: GeoPoint): String {
 
 data class Toilet(val geoPoint: GeoPoint, val option: MutableList<String>)
 suspend fun getMarkerOnLocation(mapView: MapView, context: Context, location: GeoPoint): List<Toilet> {
-    val OverPass = "https://overpass-api.de/api/interpreter"
+    val overPassUrl = "https://overpass-api.de/api/interpreter"
     val query = """
         [out:json];
         node["amenity"="toilets"](around:1000, ${location.latitude}, ${location.longitude});
         out body;
     """.trimIndent()
+
     val toilets = mutableListOf<Toilet>()
 
-    val jsonObject = sendRequestWithBody(OverPass, query, "text/plain; charset=utf-8".toMediaType())
-    val elements = jsonObject.getJSONArray("elements")
 
-    for (i in 0 until elements.length()) {
-        val element = elements.getJSONObject(i)
-        val lat = element.optDouble("lat", 0.0)
-        val lon = element.optDouble("lon", 0.0)
-        val tag = element.getJSONObject("tags")
-        val option: MutableList<String> = mutableListOf()
-        if (tag.getString("fee") != null || tag.getString("fee") != "yes") option.add(tag.getString("fee"))
-        toilets.add(Toilet(GeoPoint(lat, lon), option))
-    }
+    try {
+        val jsonObject = sendRequestWithBody(overPassUrl, query, "text/plain; charset=utf-8".toMediaType())
+        val elements = jsonObject.getJSONArray("elements")
 
-    // Marker setzen
-    for (location in toilets) {
-        val marker = Marker(mapView)
-        marker.position = location.geoPoint
-        marker.icon = ContextCompat.getDrawable(context, R.drawable.location_blue)!!
-        marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
-        mapView.overlays.add(marker)
+        for (i in 0 until elements.length()) {
+            val element = elements.getJSONObject(i)
+            val lat = element.optDouble("lat", 0.0)
+            val lon = element.optDouble("lon", 0.0)
 
-        marker.setOnMarkerClickListener { markerClicked, map ->
-            val position = markerClicked.position
-            true
+    
+
+            val tag = element.optJSONObject("tags")
+            val fee = tag?.optString("fee", "unknown") ?: "unknown"
+
+            val options: MutableList<String> = mutableListOf("fee: $fee")
+
+            toilets.add(Toilet(GeoPoint(lat, lon), options))
         }
+
+        toilets.forEach { toilet ->
+            val marker = Marker(mapView)
+            marker.position = toilet.geoPoint
+            marker.icon = ContextCompat.getDrawable(context, R.drawable.location_blue)
+            marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
+            mapView.overlays.add(marker)
+
+            marker.setOnMarkerClickListener { markerClicked, _ ->
+                val position = markerClicked.position
+                Log.d("MarkerClicked", "Marker clicked at: $position")
+                true
+            }
+        }
+
+        mapView.invalidate()
+    } catch (e: Exception) {
+        Log.e("getMarkerOnLocation", "Failed to fetch markers: ${e.message}")
     }
 
-    mapView.invalidate()
     return toilets
 }
+
 
