@@ -43,6 +43,7 @@ suspend fun getMarkerOnLocation(mapView: MapView, context: Context, location: Ge
 
     val toilets = mutableListOf<Toilet>()
 
+
     try {
         val jsonObject = sendRequestWithBody(overPassUrl, query, "text/plain; charset=utf-8".toMediaType())
         val elements = jsonObject.getJSONArray("elements")
@@ -51,6 +52,8 @@ suspend fun getMarkerOnLocation(mapView: MapView, context: Context, location: Ge
             val element = elements.getJSONObject(i)
             val lat = element.optDouble("lat", 0.0)
             val lon = element.optDouble("lon", 0.0)
+
+    
 
             val tag = element.optJSONObject("tags")
             val fee = tag?.optString("fee", "unknown") ?: "unknown"
