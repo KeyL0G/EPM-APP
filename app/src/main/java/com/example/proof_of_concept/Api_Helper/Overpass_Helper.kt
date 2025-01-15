@@ -14,20 +14,21 @@ import org.jsoup.Jsoup
 
 
 suspend fun getStreet(location: GeoPoint): String {
-    val overPassUrl = "https://nominatim.openstreetmap.org/reverse?format=html&lat=${location.latitude}&lon=${location.longitude}"
+    val overPassUrl =
+        "https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${location.latitude}&lon=${location.longitude}"
 
     return try {
-        val htmlContent = sendRequestWithHTML(overPassUrl)
-        val document = Jsoup.parse(htmlContent)
-        val addressElement = document.select("div#address")
-        val road = addressElement.select("span.road").text()
-        val houseNumber = addressElement.select("span.house_number").text()
+        val jsonResponse = sendRequest(overPassUrl)
+        val addressObject = jsonResponse.getJSONObject("address")
+        val road = addressObject.optString("road", "")
+        val houseNumber = addressObject.optString("house_number", "")
         "${road} ${houseNumber}".trim()
     } catch (e: Exception) {
         Log.e("getStreet", "Failed to get street information: ${e.message}")
         "Unknown Address"
     }
 }
+
 
 
 
@@ -52,7 +53,6 @@ suspend fun getMarkerOnLocation(mapView: MapView, context: Context, location: Ge
         val option: MutableList<String> = mutableListOf()
         if (tag.getString("fee") != null || tag.getString("fee") != "yes") option.add(tag.getString("fee"))
         toilets.add(Toilet(GeoPoint(lat, lon), option))
-        Log.e("Lat", "${toilets[0]}")
     }
 
     // Marker setzen

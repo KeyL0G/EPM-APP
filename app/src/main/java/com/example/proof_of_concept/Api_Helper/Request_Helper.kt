@@ -85,6 +85,7 @@ suspend fun sendRequest(
 
         val request = Request.Builder()
             .url(url)
+            .header("User-Agent", "ToiLocate/1.0 (kaan.kalinkarci@gmail.com)")
             .build()
 
         client.newCall(request).enqueue(object : Callback {
@@ -122,6 +123,7 @@ suspend fun sendRequestWithHTML(url: String): String {
             override fun onResponse(call: Call, response: Response) {
                 try {
                     val responseAsString = response.body!!.string()
+                    Log.e("HTML","$responseAsString")
                     continuation.resume(responseAsString)
                 } catch (e: Exception) {
                     Log.e("RequestHandler", "Error parsing HTML: ${e.message}")
