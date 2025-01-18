@@ -68,9 +68,9 @@ class Map_Viewmodel: ViewModel() {
 
     fun startCompassTracking(context: Context) {
         compassSensor = CompassSensor(context) { azimuth ->
-            val correctedAzimuth = (360 - azimuth) % 360 // Invertiere den Winkel
-            marker?.rotation = correctedAzimuth+45 // Offset anpassen, falls das Icon nicht nach Norden zeigt
-            map.value?.invalidate() // Karte aktualisieren
+            val correctedAzimuth = (360 - azimuth) % 360
+            marker?.rotation = correctedAzimuth+45
+            map.value?.invalidate()
         }
         compassSensor?.start()
     }
