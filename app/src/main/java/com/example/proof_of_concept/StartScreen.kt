@@ -31,16 +31,13 @@ fun StartScreen(context: Context,onNavigationClick: () -> Unit, onLocationClick:
     val map by map_viewmodel.map.observeAsState(initial = null)
     val location by map_viewmodel.currentLocation.observeAsState(initial = null)
     val toilets by osmdroid_viewmodel.currentToilets.observeAsState(initial = emptyList())
-    val hasPermission by map_viewmodel.hasPermission.observeAsState(initial = false)
-    map_viewmodel.updatePermission(hasLocationPermission(context))
-
     var selectedTab by remember { mutableStateOf(0) }
 
-
+    var hasPermission by remember { mutableStateOf(hasLocationPermission(context)) }
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { isGranted ->
-           map_viewmodel.updatePermission(isGranted)
+            hasPermission = isGranted
             if (hasPermission) {
                 map_viewmodel.updateLocation(context)
                 map_viewmodel.moveMapToCurrentLocation(context)
@@ -52,7 +49,12 @@ fun StartScreen(context: Context,onNavigationClick: () -> Unit, onLocationClick:
         }
     )
     var showFilterMenu by remember { mutableStateOf(false) }
-
+    var buttonText by remember {
+        if(!hasPermission)
+            mutableStateOf("In der Nähe suchen?")
+        else
+            mutableStateOf("Sucht in der Nähe.")
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -64,18 +66,21 @@ fun StartScreen(context: Context,onNavigationClick: () -> Unit, onLocationClick:
             Button(
                 onClick = { permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION) },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !hasPermission,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.DarkGray,
-                    contentColor = Color.White,
-                    disabledContainerColor = Color.Gray,
-                    disabledContentColor = Color.White
-                )
+                enabled = !hasPermission
             ) {
-                Text(text = if (location == null) "In der Nähe suchen?" else "Sucht in der Nähe.", style = MaterialTheme.typography.bodySmall)
+                Text(buttonText, style = MaterialTheme.typography.bodySmall)
             }
 
             Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = if (location == null) "Suchen ..." else "Sucht aktuell nicht!",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.White, shape = MaterialTheme.shapes.medium)
+                    .padding(12.dp),
+                style = MaterialTheme.typography.bodyMedium
+            )
 
             if (toilets.size > 0){
                 TabRow(

@@ -96,7 +96,7 @@ fun SettingsScreen(onNavigationClick: () -> Unit) {
             Text("Entwickelt von K.Y.E.")
             Text("Download in Android")
             Text(
-                "E-Mail: email@toLocate.de",
+                "E-Mail: email@ToiLocate.de",
                 color = Color.Blue,
                 modifier = Modifier.padding(top = 8.dp)
             )

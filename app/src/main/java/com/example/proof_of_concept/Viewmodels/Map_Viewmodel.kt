@@ -6,6 +6,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.proof_of_concept.CompassSensor
 import com.example.proof_of_concept.Helper.getCurrentLocation
 import com.example.proof_of_concept.R
 import org.osmdroid.util.GeoPoint
@@ -35,6 +36,8 @@ class Map_Viewmodel: ViewModel() {
     private val _navigationPage: MutableLiveData<Navigation_Page> = MutableLiveData()
     val navigationPage: LiveData<Navigation_Page> = _navigationPage
 
+    private var marker: Marker? = null
+
     fun updateNavigationPage(value: Navigation_Page){
         _navigationPage.value = value
     }
@@ -61,25 +64,60 @@ class Map_Viewmodel: ViewModel() {
         }
     }
 
+    private var compassSensor: CompassSensor? = null
+
+    fun startCompassTracking(context: Context) {
+        compassSensor = CompassSensor(context) { azimuth ->
+            val correctedAzimuth = (360 - azimuth) % 360 // Invertiere den Winkel
+            marker?.rotation = correctedAzimuth+45 // Offset anpassen, falls das Icon nicht nach Norden zeigt
+            map.value?.invalidate() // Karte aktualisieren
+        }
+        compassSensor?.start()
+    }
+
+
+    fun stopCompassTracking() {
+        compassSensor?.stop()
+        compassSensor = null
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        stopCompassTracking()
+    }
+
+
     fun moveMapToCurrentLocation(context: Context) {
-        if (map.value != null && currentLocation.value != null) {
-            val existingMarker = map.value!!.overlays.filterIsInstance<Marker>().firstOrNull {
-                it.position.latitude == oldLocation.latitude && it.position.longitude == oldLocation.longitude
+        val mapView = map.value
+        val newLocation = currentLocation.value
+
+        if (mapView != null && newLocation != null) {
+            // Entferne alten Marker, falls vorhanden
+            marker?.let {
+                mapView.overlays.remove(it)
             }
-            if (existingMarker != null) {
-                map.value!!.overlays.remove(existingMarker)
+
+            // Erstelle einen neuen Marker und speichere ihn in der Instanzvariable
+            marker = Marker(mapView).apply {
+                position = newLocation
+                icon = ContextCompat.getDrawable(context, R.drawable.near_me_blue)!!
+                setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
             }
-            val marker = Marker(map.value!!)
-            marker.position = currentLocation.value!!
-            marker.icon = ContextCompat.getDrawable(context, R.drawable.near_me_blue)!!
-            marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
-            map.value!!.overlays.add(marker)
-            map.value!!.controller.setZoom(18.0)
-            map.value!!.controller.setCenter(currentLocation.value!!)
+
+            // Füge den neuen Marker hinzu
+            mapView.overlays.add(marker)
+            mapView.controller.setZoom(18.0)
+            mapView.controller.setCenter(newLocation)
+
+            // Starte den Kompass-Tracker
+            startCompassTracking(context)
         } else {
-            Log.e("MAP_VIEWMOEL", "currentLocation or map are null")
+            Log.e("MAP_VIEWMODEL", "currentLocation or map are null")
         }
     }
+
+
+
 
     fun deleteRouteFromMap(route: List<GeoPoint>?){
         var removeLine = Polyline()
