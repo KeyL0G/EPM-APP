@@ -1,5 +1,6 @@
 package com.example.proof_of_concept
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -37,9 +39,11 @@ fun StartRoute(onNavigationClick: () -> Unit) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = { /* Navigation Richtung ändern */ }) {
-                Icon(Icons.Default.Close, contentDescription = "Richtungspfeil")
-            }
+
+                Image(
+                    painter = painterResource(id = R.drawable.arrow_upward_black),
+                    contentDescription = "Richtung"
+                )
             Text(text = "Beispiel - Straße", fontWeight = FontWeight.Bold)
             IconButton(onClick = { /* Refresh Funktion */ }) {
                 Icon(Icons.Default.Refresh, contentDescription = "Aktualisieren")

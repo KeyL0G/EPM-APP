@@ -57,7 +57,9 @@ fun Main_App(context: Context) {
                 map_viewmodel.updateNavigationPage(Navigation_Page.LOCATIONNAVIGATION)
             }
         )
+        Navigation_Page.BEWERTUNGEN -> Bewertung(
 
+        )
     }
 
 }

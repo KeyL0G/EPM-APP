@@ -18,7 +18,8 @@ enum class Navigation_Page {
     START,
     LOCATIONDESCRIPTION,
     LOCATIONNAVIGATION,
-    STARTROUTE
+    STARTROUTE,
+    BEWERTUNGEN
 }
 
 class Map_Viewmodel: ViewModel() {
