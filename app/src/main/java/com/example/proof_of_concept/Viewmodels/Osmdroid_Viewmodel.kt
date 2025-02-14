@@ -6,9 +6,9 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.proof_of_concept.Api_Helper.AllRoutes
 import com.example.proof_of_concept.Api_Helper.getMarkerOnLocation
 import com.example.proof_of_concept.Api_Helper.getRouteFromOpenRouteService
-import com.example.proof_of_concept.Api_Helper.getRoutesFromOSRM
 import com.example.proof_of_concept.Api_Helper.getStreet
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -16,11 +16,11 @@ import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 
 data class ToiletDetail(val fullAddress: String = "", val location: GeoPoint = GeoPoint(0.0,0.0), val options: List<String> = mutableListOf())
-data class Routes(
-    val routeCar: List<List<GeoPoint>>,
-    val routeFoot: List<List<GeoPoint>>,
-    val routeBike: List<List<GeoPoint>>,
-    val routeAccess: List<List<GeoPoint>>,
+data class AllRoutesFromAPI(
+    val Car: AllRoutes,
+    val Foot: AllRoutes,
+    val Bike: AllRoutes,
+    val Access: AllRoutes,
 )
 
 class Osmdroid_Viewmodel: ViewModel() {
@@ -30,11 +30,11 @@ class Osmdroid_Viewmodel: ViewModel() {
     private val _currentSelectedToilet: MutableLiveData<ToiletDetail> = MutableLiveData()
     val currentSelectedToilet: LiveData<ToiletDetail> = _currentSelectedToilet
 
-    private val _routes: MutableLiveData<Routes> = MutableLiveData()
-    val routes: LiveData<Routes> = _routes
+    private val _allRoutesFromAPI: MutableLiveData<AllRoutesFromAPI> = MutableLiveData()
+    val allRoutesFromAPI: LiveData<AllRoutesFromAPI> = _allRoutesFromAPI
 
-    fun setRoutes(routes: Routes) {
-        _routes.value = routes
+    fun setAllRoutesFromAPI(routes: AllRoutesFromAPI) {
+        _allRoutesFromAPI.value = routes
     }
 
     fun setCurrentSelectedToilet(toilet: ToiletDetail){
@@ -65,24 +65,17 @@ class Osmdroid_Viewmodel: ViewModel() {
     fun getRoutes(currentLocation: GeoPoint, toLocation: GeoPoint) {
         viewModelScope.launch {
             try {
-                val routeCar = getSpecialRoute("routed-car", "driving-car", currentLocation, toLocation)
-                val routeFoot = getSpecialRoute("routed-foot", "foot-walking", currentLocation, toLocation)
-                val routeBike = getSpecialRoute("routed-bike", "cycling-regular", currentLocation, toLocation)
-                val routeAccess = getSpecialRoute("routed-foot", "wheelchair", currentLocation, toLocation).asReversed()
-                val allRoutes = Routes(routeCar, routeFoot, routeBike, routeAccess)
-                setRoutes(allRoutes)
+                val routeCar = getSpecialRoute( "driving-car", currentLocation, toLocation)
+                val routeFoot = getSpecialRoute( "foot-walking", currentLocation, toLocation)
+                val routeBike = getSpecialRoute( "cycling-regular", currentLocation, toLocation)
+                val routeAccess = getSpecialRoute( "wheelchair", currentLocation, toLocation)
+                val allRoutes = AllRoutesFromAPI(routeCar, routeFoot, routeBike, routeAccess)
+                setAllRoutesFromAPI(allRoutes)
             } catch (e: Exception) {
                 Log.e("Osmdroid_Viewmodel", "Failed to get routes: ${e.message}")
             }
         }
     }
 
-    private suspend fun getSpecialRoute(optionA: String, optionB: String, currentLocation: GeoPoint, toLocation: GeoPoint): List<List<GeoPoint>> {
-        val getRouteFromOSRM = getRoutesFromOSRM(optionA, currentLocation, toLocation)
-        val getRouteFromOpenRouteService = getRouteFromOpenRouteService(optionB, currentLocation, toLocation)
-        val allRoute = mutableListOf<List<GeoPoint>>()
-        allRoute.add(getRouteFromOSRM)
-        getRouteFromOpenRouteService.forEach { allRoute.add(it) }
-        return allRoute
-    }
+    private suspend fun getSpecialRoute(option: String, currentLocation: GeoPoint, toLocation: GeoPoint): AllRoutes = getRouteFromOpenRouteService(option, currentLocation, toLocation)
 }

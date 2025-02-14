@@ -3,6 +3,7 @@ package com.example.proof_of_concept
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -43,23 +45,25 @@ import com.example.proof_of_concept.Viewmodels.Osmdroid_Viewmodel
 fun LocationNavigation(onBackNavigation: () -> Unit, onGoNavigation: () -> Unit) {
     val map_viewmodel: Map_Viewmodel = viewModel()
     val osmdroid_viewmodel: Osmdroid_Viewmodel = viewModel()
-    val routes by osmdroid_viewmodel.routes.observeAsState(initial = null)
+    val allRoutesFromAPI by osmdroid_viewmodel.allRoutesFromAPI.observeAsState(initial = null)
     var activeRoute by remember { mutableStateOf(0) }
+    var showStepsView by remember { mutableStateOf(false) }
 
-    if (routes != null) {
+
+    if (allRoutesFromAPI != null) {
         when (activeRoute) {
             0 -> {
-                map_viewmodel.updateRoute(routes!!.routeCar[0])
-                map_viewmodel.drawRoute(routes!!.routeCar[0])} //car
+                map_viewmodel.updateRoute(allRoutesFromAPI!!.Car.route[0].geometry)
+                map_viewmodel.drawRoute(allRoutesFromAPI!!.Car.route[0].geometry) }//car
             1 -> {
-                map_viewmodel.updateRoute(routes!!.routeFoot[0])
-                map_viewmodel.drawRoute(routes!!.routeFoot[0])}//foot
+                map_viewmodel.updateRoute(allRoutesFromAPI!!.Foot.route[0].geometry)
+                map_viewmodel.drawRoute(allRoutesFromAPI!!.Foot.route[0].geometry)}//foot
             2 -> {
-                map_viewmodel.updateRoute(routes!!.routeBike[0])
-                map_viewmodel.drawRoute(routes!!.routeBike[0])}//bike
+                map_viewmodel.updateRoute(allRoutesFromAPI!!.Bike.route[0].geometry)
+                map_viewmodel.drawRoute(allRoutesFromAPI!!.Bike.route[0].geometry)}//bike
             3 -> {
-                map_viewmodel.updateRoute(routes!!.routeAccess[0])
-                map_viewmodel.drawRoute(routes!!.routeAccess[0])} //access
+                map_viewmodel.updateRoute(allRoutesFromAPI!!.Access.route[0].geometry)
+                map_viewmodel.drawRoute(allRoutesFromAPI!!.Access.route[0].geometry)} //access
         }
     }
 
@@ -191,7 +195,7 @@ fun LocationNavigation(onBackNavigation: () -> Unit, onGoNavigation: () -> Unit)
                     horizontalArrangement = Arrangement.SpaceAround
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        IconButton(onClick = {}) {
+                        IconButton(onClick = {showStepsView = true}) {
                             Image(
                                 painter = painterResource(id = R.drawable.route_black),
                                 contentDescription = null,
@@ -199,7 +203,7 @@ fun LocationNavigation(onBackNavigation: () -> Unit, onGoNavigation: () -> Unit)
                                 contentScale = ContentScale.Inside
                             )
                         }
-                        Text("Route")
+                        Text("Steps")
                     }
 
                     Button(
@@ -264,5 +268,23 @@ fun LocationNavigation(onBackNavigation: () -> Unit, onGoNavigation: () -> Unit)
                 }
             }
         }
+    }
+}
+
+@Composable
+fun stepsUI(onDismiss: () -> Unit){
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.5f)) // Hintergrund abdunkeln
+            .clickable {onDismiss()} // Schließen bei Klick außerhalb
+    ) {
+        Column(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .background(Color.White, shape = MaterialTheme.shapes.large)
+                .padding(16.dp)
+    ){}
     }
 }
