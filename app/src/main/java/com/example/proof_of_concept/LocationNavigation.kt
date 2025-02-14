@@ -37,6 +37,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.proof_of_concept.Api_Helper.Route
 import com.example.proof_of_concept.Viewmodels.Map_Viewmodel
 import com.example.proof_of_concept.Viewmodels.Osmdroid_Viewmodel
 
@@ -49,32 +50,35 @@ fun LocationNavigation(onBackNavigation: () -> Unit, onGoNavigation: () -> Unit)
     var activeRoute by remember { mutableStateOf(0) }
     var showStepsView by remember { mutableStateOf(false) }
 
-
     if (allRoutesFromAPI != null) {
         when (activeRoute) {
             0 -> {
                 map_viewmodel.updateRoute(allRoutesFromAPI!!.Car.route[0].geometry)
-                map_viewmodel.drawRoute(allRoutesFromAPI!!.Car.route[0].geometry) }//car
+                map_viewmodel.drawRoute(allRoutesFromAPI!!.Car.route[0].geometry)
+            }
             1 -> {
                 map_viewmodel.updateRoute(allRoutesFromAPI!!.Foot.route[0].geometry)
-                map_viewmodel.drawRoute(allRoutesFromAPI!!.Foot.route[0].geometry)}//foot
+                map_viewmodel.drawRoute(allRoutesFromAPI!!.Foot.route[0].geometry)
+            }
             2 -> {
                 map_viewmodel.updateRoute(allRoutesFromAPI!!.Bike.route[0].geometry)
-                map_viewmodel.drawRoute(allRoutesFromAPI!!.Bike.route[0].geometry)}//bike
+                map_viewmodel.drawRoute(allRoutesFromAPI!!.Bike.route[0].geometry)
+            }
             3 -> {
                 map_viewmodel.updateRoute(allRoutesFromAPI!!.Access.route[0].geometry)
-                map_viewmodel.drawRoute(allRoutesFromAPI!!.Access.route[0].geometry)} //access
+                map_viewmodel.drawRoute(allRoutesFromAPI!!.Access.route[0].geometry)
+            }
         }
     }
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
+        modifier = Modifier.fillMaxSize()
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
+            // Deine Buttons für Navigation
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -92,13 +96,7 @@ fun LocationNavigation(onBackNavigation: () -> Unit, onGoNavigation: () -> Unit)
                     ),
                     border = BorderStroke(1.dp, Color.Blue)
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(text = "Zurück")
-                    }
+                    Text(text = "Zurück")
                 }
 
                 Button(
@@ -111,13 +109,7 @@ fun LocationNavigation(onBackNavigation: () -> Unit, onGoNavigation: () -> Unit)
                         contentColor = Color.White
                     )
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(text = "Start")
-                    }
+                    Text(text = "Start")
                 }
             }
 
@@ -126,76 +118,43 @@ fun LocationNavigation(onBackNavigation: () -> Unit, onGoNavigation: () -> Unit)
                     .fillMaxWidth()
                     .background(Color.White)
                     .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
+                // Auswahl der Route
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceAround
                 ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        IconButton(onClick = { activeRoute = 0 }) {
-                            Image(
-                                painter = painterResource(id =
-                                   if(activeRoute == 0) R.drawable.car_blue else R.drawable.car_black
-                                ),
-                                contentDescription = null,
-                                modifier = Modifier.size(35.dp),
-                                contentScale = ContentScale.Fit
-                            )
+                    listOf(
+                        Pair(R.drawable.car_blue, R.drawable.car_black) to "10 min",
+                        Pair(R.drawable.footprint_blue, R.drawable.footprint_black) to "10 min",
+                        Pair(R.drawable.bike_blue, R.drawable.bike_black) to "10 min",
+                        Pair(R.drawable.accessible_blue, R.drawable.accessible_black) to "10 min"
+                    ).forEachIndexed { index, (icons, text) ->
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            IconButton(onClick = { activeRoute = index }) {
+                                Image(
+                                    painter = painterResource(
+                                        id = if (activeRoute == index) icons.first else icons.second
+                                    ),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(35.dp),
+                                    contentScale = ContentScale.Fit
+                                )
+                            }
+                            Text(text)
                         }
-                        Text("10 min")
-                    }
-
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        IconButton(onClick = { activeRoute = 1 }) {
-                            Image(
-                                painter = painterResource(id =
-                                    if(activeRoute == 1) R.drawable.footprint_blue else R.drawable.footprint_black
-                                ),
-                                contentDescription = null,
-                                modifier = Modifier.size(35.dp),
-                                contentScale = ContentScale.Fit
-                            )
-                        }
-                        Text("10 min")
-                    }
-
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        IconButton(onClick = { activeRoute = 2 }) {
-                            Image(
-                                painter = painterResource(id =
-                                    if(activeRoute == 2) R.drawable.bike_blue else R.drawable.bike_black
-                                ),
-                                contentDescription = null,
-                                modifier = Modifier.size(35.dp),
-                                contentScale = ContentScale.Fit
-                            )
-                        }
-                        Text("10 min")
-                    }
-
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        IconButton(onClick = { activeRoute = 3 }) {
-                            Image(
-                                painter = painterResource(id =
-                                    if(activeRoute == 3) R.drawable.accessible_blue else R.drawable.accessible_black
-                                ),
-                                contentDescription = null,
-                                modifier = Modifier.size(35.dp),
-                                contentScale = ContentScale.Fit
-                            )
-                        }
-                        Text("10 min")
                     }
                 }
 
+                // Buttons für Optionen
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceAround
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        IconButton(onClick = {showStepsView = true}) {
+                        IconButton(onClick = { showStepsView = true }) {
                             Image(
                                 painter = painterResource(id = R.drawable.route_black),
                                 contentDescription = null,
@@ -215,7 +174,6 @@ fun LocationNavigation(onBackNavigation: () -> Unit, onGoNavigation: () -> Unit)
                             containerColor = Color.Blue,
                             contentColor = Color.White
                         )
-
                     ) {
                         Text("Kürzeste Weg")
                     }
@@ -237,33 +195,40 @@ fun LocationNavigation(onBackNavigation: () -> Unit, onGoNavigation: () -> Unit)
 
                 Spacer(modifier = Modifier.height(1.dp).fillMaxWidth().background(Color.Black))
 
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(0.dp,10.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("Von:", modifier = Modifier.width(40.dp))
+                listOf("Von:" to "Straße123", "Nach:" to "Straße123").forEach { (label, value) ->
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
+                        modifier = Modifier.fillMaxWidth().padding(0.dp, 10.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Straße123")
+                        Text(label, modifier = Modifier.width(40.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Text(value)
+                        }
                     }
+                    Spacer(modifier = Modifier.height(1.dp).fillMaxWidth().background(Color.Black.copy(alpha = 0.2f)))
                 }
+            }
+        }
 
-                Spacer(modifier = Modifier.height(1.dp).fillMaxWidth().background(Color.Black.copy(alpha = 0.2f)))
+        if (showStepsView) {
+            if (allRoutesFromAPI != null) {
+                when (activeRoute) {
 
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(0.dp,10.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("Nach:", modifier = Modifier.width(40.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Text("Straße123")
+                    0 -> {
+                        stepsUI(allRoutesFromAPI!!.Car.route[0]) { showStepsView = false }
+                    }
+                    1 -> {
+                        stepsUI(allRoutesFromAPI!!.Foot.route[0]) { showStepsView = false }
+                    }
+                    2 -> {
+                        stepsUI(allRoutesFromAPI!!.Bike.route[0]) { showStepsView = false }
+                    }
+                    3 -> {
+                        stepsUI(allRoutesFromAPI!!.Access.route[0]) { showStepsView = false }
                     }
                 }
             }
@@ -271,20 +236,51 @@ fun LocationNavigation(onBackNavigation: () -> Unit, onGoNavigation: () -> Unit)
     }
 }
 
+
 @Composable
-fun stepsUI(onDismiss: () -> Unit){
+fun stepsUI(activeRoute: Route, onDismiss: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.5f)) // Hintergrund abdunkeln
-            .clickable {onDismiss()} // Schließen bei Klick außerhalb
+            .background(Color.Black.copy(alpha = 0.5f))
+            .clickable { onDismiss() }
     ) {
         Column(
             modifier = Modifier
-                .align(Alignment.BottomCenter)
+                .align(Alignment.Center)
                 .fillMaxWidth()
                 .background(Color.White, shape = MaterialTheme.shapes.large)
                 .padding(16.dp)
-    ){}
+        ) {
+            for (i in 1 until activeRoute.steps.size) {
+            Column (verticalArrangement = Arrangement.SpaceAround){
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                        Text(
+                            text = "$i.",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = Color.Black
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        Column {
+                            Text(
+                                text = activeRoute.steps[i - 1].instructions,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color.Gray
+                            )
+                            Text(
+                                text = activeRoute.steps[i - 1].name,
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = Color.Black
+                            )
+                        }
+
+                    }
+                }
+            }
+        }
     }
 }
