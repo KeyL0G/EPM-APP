@@ -1,12 +1,14 @@
 package com.example.proof_of_concept.Viewmodels
 
 import android.content.Context
+import android.speech.tts.TextToSpeech
 import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.proof_of_concept.Api_Helper.Steps
 import com.example.proof_of_concept.CompassSensor
 import com.example.proof_of_concept.Helper.getCurrentLocation
 import com.example.proof_of_concept.R
@@ -39,9 +41,15 @@ class Map_Viewmodel: ViewModel() {
     val hasPermission: LiveData<Boolean> = _hasPermission
     private val _navigationPage: MutableLiveData<Navigation_Page> = MutableLiveData()
     val navigationPage: LiveData<Navigation_Page> = _navigationPage
+    private val _currentSteps: MutableLiveData<List<Steps>> = MutableLiveData()
+    val currentSteps = _currentSteps
 
     private var marker: Marker? = null
     private var compassSensor: CompassSensor? = null
+
+    fun updateCurrentSteps(value: List<Steps>) {
+        _currentSteps.value = value
+    }
 
     fun updateNavigationPage(value: Navigation_Page){
         _navigationPage.value = value

@@ -55,18 +55,23 @@ fun LocationNavigation(onBackNavigation: () -> Unit, onGoNavigation: () -> Unit)
             0 -> {
                 map_viewmodel.updateRoute(allRoutesFromAPI!!.Car.route[0].geometry)
                 map_viewmodel.drawRoute(allRoutesFromAPI!!.Car.route[0].geometry)
+                map_viewmodel.updateCurrentSteps(allRoutesFromAPI!!.Car.route[0].steps)
             }
             1 -> {
                 map_viewmodel.updateRoute(allRoutesFromAPI!!.Foot.route[0].geometry)
                 map_viewmodel.drawRoute(allRoutesFromAPI!!.Foot.route[0].geometry)
+                map_viewmodel.updateCurrentSteps(allRoutesFromAPI!!.Foot.route[0].steps)
             }
             2 -> {
                 map_viewmodel.updateRoute(allRoutesFromAPI!!.Bike.route[0].geometry)
                 map_viewmodel.drawRoute(allRoutesFromAPI!!.Bike.route[0].geometry)
+                map_viewmodel.updateCurrentSteps(allRoutesFromAPI!!.Bike.route[0].steps)
+
             }
             3 -> {
                 map_viewmodel.updateRoute(allRoutesFromAPI!!.Access.route[0].geometry)
                 map_viewmodel.drawRoute(allRoutesFromAPI!!.Access.route[0].geometry)
+                map_viewmodel.updateCurrentSteps(allRoutesFromAPI!!.Access.route[0].steps)
             }
         }
     }

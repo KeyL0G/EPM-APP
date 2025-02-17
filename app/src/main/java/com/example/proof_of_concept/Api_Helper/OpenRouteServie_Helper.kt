@@ -9,7 +9,7 @@ import org.osmdroid.util.GeoPoint
 
 data class Route(val distance : Double, val duration: Double, val steps: List<Steps>,val geometry: List<GeoPoint>)
 data class AllRoutes(val route: MutableList<Route> = mutableListOf())
-data class Steps(val name: String, val instructions : String)
+data class Steps(val name: String, val instructions : String, val waypoints: List<Int>)
 
 suspend fun getRouteFromOpenRouteService(routeOption: String, locationStart: GeoPoint, locationEnd: GeoPoint): AllRoutes {
     val OpenRouteService = "https://api.openrouteservice.org/v2/directions/${routeOption}"
@@ -53,7 +53,11 @@ suspend fun getRouteFromOpenRouteService(routeOption: String, locationStart: Geo
                 val segmentElement = segments.getJSONObject(i)
                 val steps = segmentElement.getJSONArray("steps")
                 for (l in 0 until steps.length()) {
-                    stepsList.add(Steps(steps.getJSONObject(l).getString("name"),steps.getJSONObject(l).getString("instruction")))
+                    val waypoints = steps.getJSONObject(l).getJSONArray("way_points")
+                    val currentWaypoints = mutableListOf<Int>()
+                    currentWaypoints.add(waypoints[0] as Int)
+                    currentWaypoints.add(waypoints[1] as Int)
+                    stepsList.add(Steps(steps.getJSONObject(l).getString("name"),steps.getJSONObject(l).getString("instruction"),currentWaypoints))
                 }
 
             }
