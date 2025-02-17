@@ -6,8 +6,12 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.proof_of_concept.CompassSensor
 import com.example.proof_of_concept.Helper.getCurrentLocation
 import com.example.proof_of_concept.R
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
@@ -36,6 +40,9 @@ class Map_Viewmodel: ViewModel() {
     private val _navigationPage: MutableLiveData<Navigation_Page> = MutableLiveData()
     val navigationPage: LiveData<Navigation_Page> = _navigationPage
 
+    private var marker: Marker? = null
+    private var compassSensor: CompassSensor? = null
+
     fun updateNavigationPage(value: Navigation_Page){
         _navigationPage.value = value
     }
@@ -62,25 +69,101 @@ class Map_Viewmodel: ViewModel() {
         }
     }
 
+    fun startCompassTracking(context: Context) {
+        compassSensor = CompassSensor(context) { azimuth ->
+            val correctedAzimuth = (360 - azimuth) % 360
+            marker?.rotation = correctedAzimuth+45
+            map.value?.invalidate()
+        }
+        compassSensor?.start()
+    }
+
+
+    fun stopCompassTracking() {
+        compassSensor?.stop()
+        compassSensor = null
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        stopCompassTracking()
+    }
+
+
     fun moveMapToCurrentLocation(context: Context) {
-        if (map.value != null && currentLocation.value != null) {
-            val existingMarker = map.value!!.overlays.filterIsInstance<Marker>().firstOrNull {
-                it.position.latitude == oldLocation.latitude && it.position.longitude == oldLocation.longitude
+        val mapView = map.value
+        val newLocation = currentLocation.value
+
+        if (mapView != null && newLocation != null) {
+            // Entferne alten Marker, falls vorhanden
+            marker?.let {
+                mapView.overlays.remove(it)
             }
-            if (existingMarker != null) {
-                map.value!!.overlays.remove(existingMarker)
+
+            // Erstelle einen neuen Marker, falls er noch nicht existiert
+            if (marker == null) {
+                marker = Marker(mapView).apply {
+                    icon = ContextCompat.getDrawable(context, R.drawable.near_me_blue)!!
+                    setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
+                }
             }
-            val marker = Marker(map.value!!)
-            marker.position = currentLocation.value!!
-            marker.icon = ContextCompat.getDrawable(context, R.drawable.near_me_blue)!!
-            marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
-            map.value!!.overlays.add(marker)
-            map.value!!.controller.setZoom(18.0)
-            map.value!!.controller.setCenter(currentLocation.value!!)
+
+            // Füge den Marker zur Karte hinzu (falls nicht bereits geschehen)
+            if (!mapView.overlays.contains(marker)) {
+                mapView.overlays.add(marker)
+            }
+
+            // Animation zwischen aktueller und neuer Marker-Position
+            val startLatMarker = marker?.position?.latitude ?: newLocation.latitude
+            val startLonMarker = marker?.position?.longitude ?: newLocation.longitude
+            val startPointMarker = GeoPoint(startLatMarker, startLonMarker)
+
+            // Animation zwischen aktueller und neuer Kamera-Position
+            val startLatCamera = mapView.mapCenter.latitude
+            val startLonCamera = mapView.mapCenter.longitude
+            val startPointCamera = GeoPoint(startLatCamera, startLonCamera)
+
+            val animationSteps = 20
+            val stepDuration = 50L // Millisekunden
+            val deltaLatMarker = (newLocation.latitude - startLatMarker) / animationSteps
+            val deltaLonMarker = (newLocation.longitude - startLonMarker) / animationSteps
+            val deltaLatCamera = (newLocation.latitude - startLatCamera) / animationSteps
+            val deltaLonCamera = (newLocation.longitude - startLonCamera) / animationSteps
+
+            // Animationslogik mit Coroutine
+            viewModelScope.launch {
+                for (i in 1..animationSteps) {
+                    // Aktualisiere die Marker-Position
+                    marker?.position = GeoPoint(
+                        startPointMarker.latitude + deltaLatMarker * i,
+                        startPointMarker.longitude + deltaLonMarker * i
+                    )
+
+                    // Aktualisiere die Kamera-Position
+                    val animatedCameraPosition = GeoPoint(
+                        startPointCamera.latitude + deltaLatCamera * i,
+                        startPointCamera.longitude + deltaLonCamera * i
+                    )
+                    mapView.controller.setCenter(animatedCameraPosition)
+
+                    mapView.postInvalidate() // Karte aktualisieren
+                    delay(stepDuration)
+                }
+
+                // Setze die endgültige Position und zentriere die Karte
+                marker?.position = newLocation
+                mapView.controller.setZoom(18.0)
+                mapView.controller.setCenter(newLocation)
+            }
+
+            // Starte den Kompass-Tracker
+            startCompassTracking(context)
         } else {
-            Log.e("MAP_VIEWMOEL", "currentLocation or map are null")
+            Log.e("MAP_VIEWMODEL", "currentLocation or map are null")
         }
     }
+
+
 
     fun deleteRouteFromMap(route: List<GeoPoint>?){
         var removeLine = Polyline()
