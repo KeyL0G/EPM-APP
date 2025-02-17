@@ -29,6 +29,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.proof_of_concept.Api_Helper.ToiletOptions
 import com.example.proof_of_concept.Viewmodels.Map_Viewmodel
 import com.example.proof_of_concept.Viewmodels.Osmdroid_Viewmodel
 import com.example.proof_of_concept.Viewmodels.ToiletDetail
@@ -138,7 +139,7 @@ fun LocationDescription(onBackNavigation: () -> Unit, onGoNavigation: () -> Unit
 
                         selectedToilet.options.forEach{ it ->
                             Text(
-                                text = it,
+                                text = getToiletOptionAsString(it),
                                 style = MaterialTheme.typography.titleMedium,
                                 modifier = Modifier.background(Color.Blue).padding(5.dp),
                                 color = Color.White
@@ -195,4 +196,12 @@ fun RatingBar(rating: Float) {
         }
     }
 }
+fun getToiletOptionAsString(toilet: ToiletOptions): String{
+    return when(toilet){
+        ToiletOptions.FEE -> "fee: yes"
+        ToiletOptions.WHEELCHAIR -> "wheelchair: yes"
+        ToiletOptions.CHANGING_TABLE -> "changing table: yes"
+        ToiletOptions.UNKNOWN -> ""
+    }
 
+}

@@ -155,7 +155,7 @@ fun Bewertung() {
 
                         selectedToilet.options.forEach { it ->
                             Text(
-                                text = it,
+                                text = "xxx",
                                 style = MaterialTheme.typography.titleMedium,
                                 modifier = Modifier.background(Color.Blue).padding(5.dp),
                                 color = Color.White

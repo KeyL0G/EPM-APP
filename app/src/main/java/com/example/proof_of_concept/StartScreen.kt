@@ -22,7 +22,9 @@ import androidx.compose.ui.unit.dp
 import com.example.proof_of_concept.Helper.hasLocationPermission
 import com.example.proof_of_concept.Viewmodels.Map_Viewmodel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.proof_of_concept.Api_Helper.ToiletOptions
 import com.example.proof_of_concept.Viewmodels.Osmdroid_Viewmodel
+import com.example.proof_of_concept.Viewmodels.ToiletDetail
 
 @Composable
 fun StartScreen(context: Context,onNavigationClick: () -> Unit, onLocationClick: () -> Unit) {
@@ -33,9 +35,13 @@ fun StartScreen(context: Context,onNavigationClick: () -> Unit, onLocationClick:
     val toilets by osmdroid_viewmodel.currentToilets.observeAsState(initial = emptyList())
     val hasPermission by map_viewmodel.hasPermission.observeAsState(initial = false)
     map_viewmodel.updatePermission(hasLocationPermission(context))
-
+    var filterToilet by remember { mutableStateOf(toilets) }
     var selectedTab by remember { mutableStateOf(0) }
-
+    val filters = listOf(
+        "Rollstuhlfreundlich" to remember { mutableStateOf(false) },
+        "Wickeltisch" to remember { mutableStateOf(false) },
+        "Kostenlos" to remember { mutableStateOf(false) },
+    )
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
@@ -52,6 +58,9 @@ fun StartScreen(context: Context,onNavigationClick: () -> Unit, onLocationClick:
         }
     )
     var showFilterMenu by remember { mutableStateOf(false) }
+    LaunchedEffect(toilets) {
+        filterToilet = toilets
+    }
 
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -77,7 +86,7 @@ fun StartScreen(context: Context,onNavigationClick: () -> Unit, onLocationClick:
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            if (toilets.size > 0){
+            if (filterToilet.size > 0){
                 TabRow(
                 selectedTabIndex = selectedTab,
                 modifier = Modifier.fillMaxWidth(),
@@ -115,7 +124,7 @@ fun StartScreen(context: Context,onNavigationClick: () -> Unit, onLocationClick:
                         .background(Color(0xFFF5F5F5))
                         .padding(8.dp)
                 ) {
-                    toilets.forEachIndexed { index, toilet ->
+                    filterToilet.forEachIndexed { index, toilet ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -205,14 +214,28 @@ fun StartScreen(context: Context,onNavigationClick: () -> Unit, onLocationClick:
 
         if (showFilterMenu) {
             FilterMenu(
-                onDismiss = { showFilterMenu = false }
+                activeFilter = filters,
+                onDismiss = { showFilterMenu = false },
+                setFilterToilets = {filterToilet = getFilteredToiletFromLocation(filterToilet,it) }
+
             )
         }
     }
 }
 
+fun getFilteredToiletFromLocation(currentToilets: List<ToiletDetail>,toiletOptions: List<ToiletOptions>): List<ToiletDetail> {
+   return when(toiletOptions.size){
+        1 ->  currentToilets.filter { it.options.contains(toiletOptions[0])}
+        2 ->  currentToilets.filter { it.options.contains(toiletOptions[0]) || it.options.contains(toiletOptions[1])}
+        3 ->  currentToilets.filter { it.options.contains(toiletOptions[0]) || it.options.contains(toiletOptions[1]) || it.options.contains(toiletOptions[2])}
+       else -> currentToilets
+    }
+
+}
+
 @Composable
-fun FilterMenu(onDismiss: () -> Unit) {
+fun FilterMenu(activeFilter :  List<Pair<String, MutableState<Boolean>>>,setFilterToilets: (currentToiletOptions: List<ToiletOptions>) -> Unit, onDismiss: () -> Unit) {
+    val osmdroid_viewmodel: Osmdroid_Viewmodel = viewModel()
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -230,17 +253,16 @@ fun FilterMenu(onDismiss: () -> Unit) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            val filters = listOf(
-                "Rollstuhlfreundlich" to remember { mutableStateOf(false) },
-                "Wickeltisch" to remember { mutableStateOf(false) },
-                "Kostenlos" to remember { mutableStateOf(false) },
-            )
+            val filters = activeFilter
 
             filters.forEach { (label, state) ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(
                         checked = state.value,
-                        onCheckedChange = { state.value = it }
+                        onCheckedChange = {
+                            state.value = it
+                            setFilterToilets(getFiltersAsToiletOptions(filters))
+                        }
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(label)
@@ -256,4 +278,13 @@ fun FilterMenu(onDismiss: () -> Unit) {
         }
     }
 }
-
+fun getFiltersAsToiletOptions(filter: List<Pair<String, MutableState<Boolean>>>): List<ToiletOptions>{
+    val toiletOptions: MutableList<ToiletOptions> = mutableListOf()
+    filter.forEach{
+            (label, state) ->
+        if (label == "Wickeltisch" && state.value) toiletOptions.add(ToiletOptions.CHANGING_TABLE)
+        if (label == "Rollstuhlfreundlich" && state.value) toiletOptions.add(ToiletOptions.WHEELCHAIR)
+        if (label == "Kostenlos" && state.value) toiletOptions.add(ToiletOptions.FEE)
+    }
+    return toiletOptions
+}

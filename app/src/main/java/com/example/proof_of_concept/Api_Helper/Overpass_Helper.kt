@@ -29,10 +29,15 @@ suspend fun getStreet(location: GeoPoint): String {
     }
 }
 
+enum class ToiletOptions{
+    FEE,
+    WHEELCHAIR,
+    CHANGING_TABLE,
+    UNKNOWN
+}
 
 
-
-data class Toilet(val geoPoint: GeoPoint, val option: MutableList<String>)
+data class Toilet(val geoPoint: GeoPoint, val option: MutableList<ToiletOptions>)
 suspend fun getMarkerOnLocation(mapView: MapView, context: Context, location: GeoPoint): List<Toilet> {
     val overPassUrl = "https://overpass-api.de/api/interpreter"
     val query = """
@@ -61,11 +66,11 @@ suspend fun getMarkerOnLocation(mapView: MapView, context: Context, location: Ge
             val wheelchair = tag?.optString("wheelchair", "unknown") ?: "unknown"
 
 
-            val options: MutableList<String> = mutableListOf(
-                "fee: $fee",
-                "changing_table: $changingTable",
-                "wheelchair: $wheelchair")
-
+            val options: MutableList<ToiletOptions> = mutableListOf(
+                if (fee == "unknown") ToiletOptions.UNKNOWN else ToiletOptions.FEE,
+                if (changingTable == "unknown") ToiletOptions.UNKNOWN else ToiletOptions.CHANGING_TABLE,
+                if (wheelchair == "unknown") ToiletOptions.UNKNOWN else ToiletOptions.WHEELCHAIR,
+            )
             toilets.add(Toilet(GeoPoint(lat, lon), options))
         }
 
@@ -91,4 +96,19 @@ suspend fun getMarkerOnLocation(mapView: MapView, context: Context, location: Ge
     return toilets
 }
 
+fun buildOverpassQuery(location: GeoPoint, filterFree: Boolean, filterChangingTable: Boolean, filterWheelchair: Boolean): String {
+    val filters = mutableListOf<String>()
+
+    if (filterFree) filters.add("""["fee"!="yes"]""")
+    if (filterChangingTable) filters.add("""["changing_table"="yes"]""")
+    if (filterWheelchair) filters.add("""["wheelchair"="yes"]""")
+
+    val filterString = filters.joinToString(" ")
+
+    return """
+        [out:json];
+        node["amenity"="toilets"](around:1000, ${location.latitude}, ${location.longitude}) $filterString;
+        out body;
+    """.trimIndent()
+}
 

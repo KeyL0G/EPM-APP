@@ -7,6 +7,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.proof_of_concept.Api_Helper.AllRoutes
+import com.example.proof_of_concept.Api_Helper.ToiletOptions
 import com.example.proof_of_concept.Api_Helper.getMarkerOnLocation
 import com.example.proof_of_concept.Api_Helper.getRouteFromOpenRouteService
 import com.example.proof_of_concept.Api_Helper.getStreet
@@ -15,7 +16,7 @@ import kotlinx.coroutines.launch
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 
-data class ToiletDetail(val fullAddress: String = "", val location: GeoPoint = GeoPoint(0.0,0.0), val options: List<String> = mutableListOf())
+data class ToiletDetail(val fullAddress: String = "", val location: GeoPoint = GeoPoint(0.0,0.0), val options: List<ToiletOptions> = mutableListOf())
 data class AllRoutesFromAPI(
     val Car: AllRoutes,
     val Foot: AllRoutes,
